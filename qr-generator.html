@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rotting Hill — QR Code Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Cinzel:wght@400;600&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--ink:#0d0a0e;--gold:#c8961e;--gold-dim:#7a5a0a;--bone:#d4c49a;--bone-dim:#8a7a5a;}
+body{background:var(--ink);color:var(--bone);font-family:'IM Fell English',serif;min-height:100vh;padding:2rem 1.5rem;}
+.topnav{display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;}
+.back-link{font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.25em;color:var(--gold-dim);text-decoration:none;text-transform:uppercase;}
+.back-link:hover{color:var(--gold);}
+h1{font-family:'UnifrakturMaguntia',cursive;font-size:2.5rem;color:var(--gold);text-shadow:0 0 20px rgba(200,150,30,0.4);margin-bottom:0.5rem;}
+.subtitle{font-style:italic;color:var(--bone-dim);margin-bottom:2rem;font-size:0.9rem;}
+label{font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--bone-dim);display:block;margin-bottom:0.4rem;}
+.url-row{display:flex;gap:0.75rem;margin-bottom:2rem;flex-wrap:wrap;}
+.url-field{flex:1;min-width:240px;}
+input[type=text]{width:100%;background:#110d0f;border:1px solid rgba(200,150,30,0.2);border-radius:2px;padding:0.65rem 0.85rem;color:var(--bone);font-family:'IM Fell English',serif;font-size:0.9rem;outline:none;}
+input[type=text]:focus{border-color:rgba(200,150,30,0.5);}
+.gen-btn{background:rgba(200,150,30,0.1);border:1px solid rgba(200,150,30,0.3);border-radius:2px;color:var(--gold);font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;padding:0.65rem 1.25rem;cursor:pointer;white-space:nowrap;align-self:flex-end;}
+.gen-btn:hover{background:rgba(200,150,30,0.2);}
+.instructions{background:#110d0f;border:1px solid rgba(200,150,30,0.1);border-radius:2px;padding:1.25rem 1.5rem;margin-bottom:2rem;font-size:0.85rem;line-height:1.85;color:var(--bone-dim);}
+.instructions strong{color:var(--bone);}
+.qr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.25rem;}
+.qr-card{background:#110d0f;border:1px solid rgba(200,150,30,0.15);border-radius:2px;padding:1.25rem;text-align:center;}
+.qr-card-emoji{font-size:2rem;margin-bottom:0.5rem;}
+.qr-card-title{font-family:'Cinzel',serif;font-size:0.8rem;font-weight:600;color:var(--bone);margin-bottom:0.2rem;}
+.qr-card-tag{font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:0.85rem;}
+.qr-wrap{background:#fff;display:inline-block;padding:10px;border-radius:2px;margin-bottom:0.85rem;}
+.qr-url{font-size:0.65rem;color:var(--bone-dim);word-break:break-all;font-family:monospace;margin-bottom:0.6rem;}
+.qr-note{font-size:0.72rem;color:var(--bone-dim);font-style:italic;line-height:1.5;}
+.print-btn{background:transparent;border:1px solid rgba(200,150,30,0.2);border-radius:2px;color:var(--gold-dim);font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;padding:0.45rem 0.85rem;cursor:pointer;margin-top:0.6rem;width:100%;transition:all 0.2s;}
+.print-btn:hover{border-color:var(--gold);color:var(--gold);}
+@media print{body{background:white;color:black;}.topnav,.instructions,.url-row,.gen-btn,.print-btn{display:none;}.qr-card{border:1px solid #ccc;}.qr-card-title,.qr-card-tag{color:black;}}
+</style>
+</head>
+<body>
+<div class="topnav">
+  <a href="village-map.html" class="back-link">← Village Map</a>
+</div>
+<h1>QR Code Generator</h1>
+<p class="subtitle">Generate printable QR codes for all 6 buildings of Rotting Hill Borough.</p>
+
+<div class="instructions">
+  <strong>How to use:</strong> Enter the URL where your village is hosted (e.g. <code>https://rotting-hill.netlify.app</code>), click Generate, then print this page. Cut out each card and mount it inside the corresponding building's front door — behind a hinged door panel so players must physically open the door to scan. Players scan with any phone camera — no app needed.<br><br>
+  <strong>Free hosting:</strong> Drag all HTML files to <strong>netlify.com/drop</strong> for a free instant URL. Then return here and update the base URL.
+</div>
+
+<div class="url-row">
+  <div class="url-field">
+    <label>Base URL of your village</label>
+    <input type="text" id="base-url" value="https://rottinghill.netlify.app" placeholder="https://rottinghill.netlify.app"/>
+  </div>
+  <button class="gen-btn" onclick="generateAll()">Generate QR Codes</button>
+</div>
+
+<div class="qr-grid" id="qr-grid"></div>
+
+<script>
+const BUILDINGS=[
+  {id:'dreadmoor',name:'Dreadmoor Castle',tag:'The Black Cliffs · Fragment 1',emoji:'🏰'},
+  {id:'shadowmere',name:'Shadowmere Manor',tag:'The Cursed Hill · Fragment 2',emoji:'🏚️'},
+  {id:'sanatorium',name:'Rotting Hill Sanatorium',tag:'The Moors · Fragment 3',emoji:'🏥'},
+  {id:'sisterhood',name:'Sisterhood of the Perpetual Cauldron',tag:'The Dark Wood Edge · Fragment 4',emoji:'🧙'},
+  {id:'enstein',name:"Dr. Frank Enstein's Castle",tag:'The Lightning Quarter · Fragment 5',emoji:'⚡'},
+  {id:'dusk',name:'Dusk & Sons at Rotting Hill Cemetery',tag:'The Sacred Quarter · Fragment 6',emoji:'⚰️'},
+];
+
+function generateAll(){
+  const base=(document.getElementById('base-url').value||'').replace(/\/$/,'');
+  const grid=document.getElementById('qr-grid');
+  grid.innerHTML='';
+  BUILDINGS.forEach(b=>{
+    const url=`${base}/building.html?id=${b.id}`;
+    const card=document.createElement('div');
+    card.className='qr-card';
+    card.innerHTML=`
+      <div class="qr-card-emoji">${b.emoji}</div>
+      <div class="qr-card-title">${b.name}</div>
+      <div class="qr-card-tag">${b.tag}</div>
+      <div class="qr-wrap" id="qr-${b.id}"></div>
+      <div class="qr-url">${url}</div>
+      <p class="qr-note">Mount inside the front door of <em>${b.name}</em>. Players open the door and scan to ring the doorbell.</p>
+      <button class="print-btn" onclick="window.print()">Print All QR Codes</button>`;
+    grid.appendChild(card);
+    setTimeout(()=>{
+      try{
+        new QRCode(document.getElementById(`qr-${b.id}`),{
+          text:url,width:180,height:180,
+          colorDark:'#000000',colorLight:'#ffffff',
+          correctLevel:QRCode.CorrectLevel.H
+        });
+      }catch(e){
+        document.getElementById(`qr-${b.id}`).innerHTML=`<div style="width:180px;height:180px;background:#eee;display:flex;align-items:center;justify-content:center;font-size:11px;color:#555;padding:8px;text-align:center">Use qr-code-generator.com with the URL shown below</div>`;
+      }
+    },50);
+  });
+}
+generateAll();
+</script>
+</body>
+</html>

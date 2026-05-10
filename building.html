@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rotting Hill — Building</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0d0a0e;--gold:#c8961e;--gold-dim:#7a5a0a;--bone:#d4c49a;--bone-dim:#8a7a5a;
+  --blood:#7a1010;--blood-bright:#c01818;--green:#2a6a30;--green-bright:#40b050;
+  --purple:#6a30a0;--purple-bright:#a060e0;
+}
+body{background:var(--ink);color:var(--bone);font-family:'IM Fell English',serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:100;opacity:0.5;}
+
+/* Nav */
+.topnav{position:relative;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;border-bottom:1px solid rgba(200,150,30,0.08);}
+.back-link{font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.25em;color:var(--gold-dim);text-decoration:none;text-transform:uppercase;transition:color 0.2s;}
+.back-link:hover{color:var(--gold);}
+.nav-candies{font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.1em;color:var(--bone-dim);}
+.nav-candies span{color:var(--gold);}
+
+/* Content */
+.content{position:relative;z-index:10;max-width:480px;margin:0 auto;padding:2rem 1.5rem 5rem;display:flex;flex-direction:column;align-items:center;text-align:center;}
+
+/* Building hero */
+.building-emoji-wrap{position:relative;width:100px;height:100px;margin:0 auto 1.25rem;display:flex;align-items:center;justify-content:center;}
+.building-emoji{font-size:4rem;filter:drop-shadow(0 0 15px rgba(200,150,30,0.3));animation:emojiFloat 6s ease-in-out infinite;}
+@keyframes emojiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.building-emoji-glow{position:absolute;inset:0;border-radius:50%;animation:glowPulse 3s ease-in-out infinite;}
+@keyframes glowPulse{0%,100%{opacity:0.3}50%{opacity:0.7}}
+
+.building-tag{font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.4em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:0.5rem;}
+.building-title{font-family:'UnifrakturMaguntia',cursive;font-size:clamp(1.8rem,7vw,2.8rem);color:var(--gold);text-shadow:0 0 20px rgba(200,150,30,0.35);margin-bottom:0.75rem;line-height:1.1;}
+.building-lore{font-style:italic;color:var(--bone-dim);font-size:0.88rem;line-height:1.9;margin-bottom:0.5rem;max-width:380px;}
+.building-residents{font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.2em;color:var(--bone-dim);text-transform:uppercase;margin-bottom:2rem;opacity:0.7;}
+
+.ornament{font-size:0.9rem;color:var(--gold-dim);letter-spacing:0.5rem;opacity:0.3;margin:1.25rem 0;}
+
+/* DOORBELL */
+.doorbell-section{display:flex;flex-direction:column;align-items:center;gap:0.75rem;margin-bottom:2rem;}
+.doorbell-label{font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.35em;text-transform:uppercase;color:var(--gold-dim);}
+.doorbell-btn{width:110px;height:110px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#2a1a0a,#0e0a06);border:2px solid rgba(200,150,30,0.3);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:3rem;transition:all 0.2s;box-shadow:0 0 25px rgba(200,150,30,0.08),inset 0 0 25px rgba(0,0,0,0.5);position:relative;}
+.doorbell-btn::after{content:'';position:absolute;inset:5px;border-radius:50%;border:1px solid rgba(200,150,30,0.12);}
+.doorbell-btn:hover{border-color:rgba(200,150,30,0.6);box-shadow:0 0 40px rgba(200,150,30,0.2);}
+.doorbell-btn:active{transform:scale(0.95);}
+.doorbell-btn.ringing{animation:ringPulse 0.5s ease-out 3;}
+@keyframes ringPulse{0%{transform:scale(1);box-shadow:0 0 20px rgba(200,150,30,0.1)}50%{transform:scale(1.08);box-shadow:0 0 60px rgba(200,150,30,0.5)}100%{transform:scale(1);box-shadow:0 0 20px rgba(200,150,30,0.1)}}
+.doorbell-dare{font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.2em;color:var(--bone-dim);font-style:italic;}
+
+/* Sound wave */
+.sound-wave{display:none;gap:3px;align-items:center;height:20px;}
+.sound-wave.active{display:flex;}
+.sound-bar{width:3px;border-radius:2px;background:var(--gold-dim);animation:swave 0.7s ease-in-out infinite;}
+.sound-bar:nth-child(1){animation-delay:0s;height:5px}
+.sound-bar:nth-child(2){animation-delay:0.1s;height:12px}
+.sound-bar:nth-child(3){animation-delay:0.2s;height:18px}
+.sound-bar:nth-child(4){animation-delay:0.3s;height:12px}
+.sound-bar:nth-child(5){animation-delay:0.1s;height:8px}
+.sound-bar:nth-child(6){animation-delay:0.25s;height:15px}
+.sound-bar:nth-child(7){animation-delay:0.15s;height:6px}
+@keyframes swave{0%,100%{transform:scaleY(0.3);opacity:0.4}50%{transform:scaleY(1);opacity:1}}
+
+/* Outcome card */
+.outcome-card{width:100%;border-radius:2px;overflow:hidden;margin-bottom:1.5rem;display:none;animation:cardIn 0.5s ease-out forwards;}
+.outcome-card.show{display:block;}
+@keyframes cardIn{from{opacity:0;transform:translateY(16px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.outcome-header{padding:1rem 1.25rem;display:flex;align-items:center;gap:0.75rem;}
+.outcome-header.treat{background:linear-gradient(135deg,#1a2a10,#0e1a08);border-bottom:1px solid rgba(64,176,80,0.3);}
+.outcome-header.trick{background:linear-gradient(135deg,#2a0808,#1a0606);border-bottom:1px solid rgba(192,24,24,0.3);}
+.outcome-header.clue{background:linear-gradient(135deg,#1a1030,#100a20);border-bottom:1px solid rgba(106,48,160,0.3);}
+.outcome-icon{font-size:2rem;}
+.outcome-type{font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;margin-bottom:0.15rem;}
+.outcome-type.treat{color:var(--green-bright);}
+.outcome-type.trick{color:var(--blood-bright);}
+.outcome-type.clue{color:var(--purple-bright);}
+.outcome-title-text{font-family:'Cinzel',serif;font-size:0.95rem;font-weight:600;color:var(--bone);}
+.outcome-body{background:#100d12;padding:1.1rem 1.25rem;border:1px solid rgba(200,150,30,0.06);border-top:none;}
+.outcome-text{font-style:italic;color:var(--bone);line-height:1.85;font-size:0.9rem;margin-bottom:0.85rem;}
+.outcome-effect{font-family:'Cinzel',serif;font-size:0.7rem;letter-spacing:0.1em;padding:0.4rem 0.85rem;border-radius:2px;display:inline-block;}
+.outcome-effect.treat{background:rgba(42,96,48,0.3);color:var(--green-bright);border:1px solid rgba(64,176,80,0.2);}
+.outcome-effect.trick{background:rgba(122,16,16,0.3);color:#f05040;border:1px solid rgba(192,24,24,0.2);}
+.outcome-effect.clue{background:rgba(106,48,160,0.2);color:var(--purple-bright);border:1px solid rgba(106,48,160,0.3);}
+
+.ring-again-btn{background:transparent;border:1px solid rgba(200,150,30,0.2);border-radius:2px;color:var(--gold-dim);font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;padding:0.55rem 1.25rem;cursor:pointer;margin-bottom:1.5rem;display:none;transition:all 0.2s;}
+.ring-again-btn:hover{border-color:var(--gold);color:var(--gold);}
+
+/* Hidden element section */
+.hidden-section{width:100%;background:#100d12;border:1px solid rgba(200,150,30,0.15);border-radius:2px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;text-align:left;display:none;}
+.hidden-section.show{display:block;animation:cardIn 0.5s ease-out forwards;}
+.hidden-title{font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:0.6rem;}
+.hidden-clue{font-style:italic;color:var(--bone);line-height:1.85;font-size:0.88rem;border-left:2px solid rgba(200,150,30,0.3);padding-left:0.85rem;}
+
+/* Fragment reveal */
+.fragment-reveal{width:100%;background:linear-gradient(135deg,#1a1408,#100d06);border:1px solid rgba(200,150,30,0.4);border-radius:2px;padding:1.5rem;margin-bottom:1.5rem;text-align:center;display:none;animation:cardIn 0.6s ease-out forwards;}
+.fragment-reveal.show{display:block;}
+.frag-number{font-family:'UnifrakturMaguntia',cursive;font-size:3rem;color:var(--gold);text-shadow:0 0 20px rgba(200,150,30,0.5);margin-bottom:0.3rem;}
+.frag-label{font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:0.6rem;}
+.frag-desc{font-size:0.82rem;font-style:italic;color:var(--bone-dim);line-height:1.7;}
+.frag-already{font-size:0.8rem;color:var(--gold);font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.2em;}
+
+/* Jack-o section */
+.jacko-section{width:100%;background:#100d12;border:1px solid rgba(200,150,30,0.12);border-radius:2px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;text-align:left;}
+.jacko-title{font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:0.6rem;}
+.jacko-hint{font-size:0.82rem;color:var(--bone-dim);font-style:italic;line-height:1.7;margin-bottom:0.85rem;}
+.jacko-row{display:flex;gap:0.5rem;}
+.jacko-input{flex:1;background:rgba(0,0,0,0.4);border:1px solid rgba(200,150,30,0.18);border-radius:1px;padding:0.5rem 0.75rem;color:var(--bone);font-family:'IM Fell English',serif;font-size:0.85rem;outline:none;transition:border-color 0.2s;}
+.jacko-input:focus{border-color:rgba(200,150,30,0.5);}
+.jacko-input::placeholder{color:var(--bone-dim);opacity:0.45;}
+.jacko-submit{background:transparent;border:1px solid rgba(200,150,30,0.25);border-radius:1px;color:var(--gold);font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;padding:0.5rem 0.75rem;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.jacko-submit:hover{background:rgba(200,150,30,0.1);border-color:var(--gold);}
+.jacko-msg{font-size:0.75rem;color:var(--bone-dim);font-style:italic;min-height:1.2em;margin-top:0.4rem;}
+.jacko-found-msg{text-align:center;font-family:'Cinzel',serif;font-size:0.75rem;color:var(--gold);animation:foundGlow 2s ease-in-out infinite;padding:0.5rem;}
+@keyframes foundGlow{0%,100%{text-shadow:0 0 8px rgba(200,150,30,0.3)}50%{text-shadow:0 0 20px rgba(200,150,30,0.7)}}
+
+/* Compact clause */
+.compact-section{width:100%;background:linear-gradient(135deg,#0e0a18,#100d1a);border:1px solid rgba(106,48,160,0.2);border-radius:2px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;text-align:left;display:none;}
+.compact-section.show{display:block;}
+.compact-title{font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--purple-bright);margin-bottom:0.6rem;opacity:0.8;}
+.compact-text{font-style:italic;color:var(--bone);font-size:0.85rem;line-height:1.85;padding:0.75rem;background:rgba(106,48,160,0.08);border-left:2px solid rgba(106,48,160,0.35);}
+
+/* Visit log */
+.visit-log-section{width:100%;text-align:left;margin-bottom:1.5rem;}
+.vlog-title{font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--bone-dim);margin-bottom:0.6rem;}
+.vlog-list{list-style:none;border:1px solid rgba(200,150,30,0.06);border-radius:2px;}
+.vlog-item{display:flex;justify-content:space-between;align-items:center;padding:0.45rem 0.75rem;border-bottom:1px solid rgba(200,150,30,0.04);font-size:0.78rem;color:var(--bone-dim);font-style:italic;}
+.vlog-item:last-child{border-bottom:none;}
+.vlog-tag{font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.1em;padding:2px 5px;border-radius:2px;}
+.vlog-tag.treat{background:rgba(42,96,48,0.3);color:var(--green-bright);}
+.vlog-tag.trick{background:rgba(122,16,16,0.3);color:#f05040;}
+.vlog-tag.clue{background:rgba(106,48,160,0.2);color:var(--purple-bright);}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="village-map.html" class="back-link">← Village Map</a>
+  <div class="nav-candies">Candies: <span id="nav-candies">0</span></div>
+</nav>
+
+<div class="content" id="content"></div>
+
+<script>
+// ── STARTUP GUARD ────────────────────────────────────────────────────────────
+// If no building ID in URL, redirect to index immediately
+const _startParams = new URLSearchParams(window.location.search);
+const _startId = _startParams.get('id');
+const _startState = (()=>{try{return JSON.parse(localStorage.getItem('rh_state')||'{}')}catch{return{}}})();
+if(!_startId || !_startState.name) {
+  window.location.replace('index.html');
+}
+
+// ── BUILDING DATA ────────────────────────────────────────────────────────────
+const BUILDINGS = {
+  dreadmoor:{
+    name:'Dreadmoor Castle',tag:'The Black Cliffs',emoji:'🏰',frag:1,
+    glowColor:'rgba(122,16,16,0.3)',
+    residents:'Count Aldric Dreadmoor · Est. 900 years',
+    lore:`Castle Dreadmoor has stood for nine centuries. Its owner has stood longer. The invitation to enter is always open. The invitation to leave is a different matter entirely.`,
+    hiddenClue:`The Count has left something for you. He says it is behind the portcullis. He says this in the tone of a man who has been waiting nine hundred years and is not accustomed to being kept waiting.`,
+    fragDesc:`Fragment 1 of the Rotting Hill Compact. Handle with appropriate reverence. The Count is watching.`,
+    jackoHint:`A jack-o-lantern is carved into the stone above the castle drawbridge. What creature is sculpted beside it, guarding the gate?`,
+    jackoAnswer:'bat',
+    compactClause:`The Count agrees to ensure that no visitor to Rotting Hill shall remember the exact route by which they arrived. He will accomplish this through means he describes as "traditional" and declines to elaborate upon further.`,
+    treats:[
+      {title:"The Count's Reserved Vintage",text:`Count Dreadmoor opens the castle door exactly wide enough to extend one white-gloved hand bearing a small velvet box. Inside: dark chocolates dusted with something that shimmers. "From my private reserve," he says. "Do not inquire as to the vintage." They are extraordinary.`,effect:'+4 candies',points:4},
+      {title:"Bat Wing Brittle",text:`A bat lands on your shoulder, deposits a small wax-paper parcel, and departs with what you can only describe as dignity. Inside the parcel: honeycomb brittle in the shape of bat wings. A note reads "Compliments of the house. All of them."`,effect:'+3 candies',points:3},
+      {title:"The Midnight Invitation",text:`The door opens fully. The Count bows, which takes longer than expected given his height. "You are most welcome," he says. "Most. Welcome." He presses a gilt-edged card into your hand. It is a dinner invitation. The time listed is "Never." You get five candies anyway.`,effect:'+5 candies',points:5},
+    ],
+    tricks:[
+      {title:"The Wrong Hallway",text:`The door opens. You step in to take the fragment. The door closes. You are in a hallway. There are seventeen more hallways. The Count's voice echoes pleasantly from somewhere: "Do take your time." You eventually find the exit. Your candy bag is two pieces lighter and your hair is inexplicably swept to one side.`,effect:'Lose 2 candies · Curses +1',points:-2},
+      {title:"Bat Incident",text:`A cloud of bats exits through the door before you can enter. One takes your hat. Another takes three candies. A third simply stares at you for an uncomfortably long time before flying away. The Count watches from an upper window. He does not intervene. He appears to be smiling.`,effect:'Lose 3 candies · Curses +1',points:-3},
+      {title:"The Formal Complaint",text:`The Count opens the door, looks at you for a long moment, and produces a letter. "My lawyers," he says, "have prepared this on behalf of the evening." The letter is a formal objection to your presence. It is sixteen pages. It is impeccably typeset. You now owe one candy in court costs.`,effect:'Lose 1 candy · Curses +2',points:-1},
+    ],
+  },
+  shadowmere:{
+    name:'Shadowmere Manor',tag:'The Cursed Hill',emoji:'🏚️',frag:2,
+    glowColor:'rgba(90,40,128,0.25)',
+    residents:'The Blackwood Family · Deceased since 1933',
+    lore:`No candle has ever stayed lit inside Shadowmere Manor. No visitor has ever left exactly the same way they arrived. The Blackwood family is aware of neither of these facts, as they have not accepted that 1933 occurred.`,
+    hiddenClue:`The attic window. Second from the left. It opens inward. Someone left something on the desk up there. Someone who has not used that desk since October 31st, 1933.`,
+    fragDesc:`Fragment 2 of the Rotting Hill Compact. Found in the attic of Shadowmere Manor, under a layer of dust that has not been disturbed since 1933.`,
+    jackoHint:`There is a jack-o-lantern on the front step of Shadowmere Manor that was not placed there by anyone living. The welcome mat beneath it spells something. What does it say?`,
+    jackoAnswer:'leave',
+    compactClause:`The Blackwood family agrees to maintain Shadowmere Manor as a waypoint between the living world and Rotting Hill, ensuring no census, map, or postal record ever correctly locates the borough. They have agreed to this sincerely and in good faith, and remain unaware they have been dead since 1933.`,
+    treats:[
+      {title:"Mrs. Blackwood's Autumn Cake",text:`A slice of dark spice cake appears on the front step, under a silver cloche, with a note in elegant handwriting: "For our guest. We do not often have guests who leave. How refreshing that you plan to." The cake is perfect. You feel slightly haunted.`,effect:'+3 candies',points:3},
+      {title:"The Parlour Sweets",text:`The parlour door opens by itself. On the table: a dish of boiled sweets in autumn colours. A family portrait on the wall — dated 1932 — seems to be watching. Warmly. You take the sweets and leave before you can think too hard about any of this.`,effect:'+4 candies',points:4},
+    ],
+    tricks:[
+      {title:"The Guest Room",text:`You knock. The door opens. A butler who looks through rather than at you leads you to a guest room and leaves. The room is lovely. The window shows a different century. You find the exit forty-five minutes later. Two candies are missing. You cannot remember eating them.`,effect:'Lose 2 candies · Curses +1',points:-2},
+      {title:"The Photograph",text:`You look through the Manor window. A family photograph on the mantle catches your eye. You look closer. You are in it. You are standing exactly where you are standing now. The photo is dated 1931. You step back from the window quickly.`,effect:'Curses +2',points:0},
+      {title:"Wrong Year",text:`The front door opens, you reach for the doorbell, and a voice from inside calls "Darling, your cousin from 1987 is here again." There is a long silence. "Tell them it hasn't happened yet." The door closes. You lose two candies to temporal confusion.`,effect:'Lose 2 candies · Curses +1',points:-2},
+    ],
+  },
+  sanatorium:{
+    name:'Rotting Hill Sanatorium for Lost Minds',tag:'The Moors',emoji:'🏥',frag:3,
+    glowColor:'rgba(42,74,42,0.25)',
+    residents:'Dr. Seymour Graves · Charge Nurse Lucy Lockdown · Nurse Ratchet',
+    lore:`The Rotting Hill Sanatorium has a 100% admission rate and a 0% discharge rate. Dr. Graves considers this his greatest professional achievement. His business cards read: "Dr. Seymour Graves — I'll See You In Yours."`,
+    hiddenClue:`Nurse Lockdown has left something for you at the front desk. She says it is in the intake folder under the name you gave at registration. She smiles when she says this. She already knows your name.`,
+    fragDesc:`Fragment 3 of the Rotting Hill Compact. Filed under "Pending Admissions." The folder has your name on it. It has had your name on it since 1887.`,
+    jackoHint:`A jack-o-lantern sits on the Sanatorium's front step wearing a tiny nurse's cap. What is written on the clipboard it is holding?`,
+    jackoAnswer:'admitted',
+    compactClause:`Dr. Graves, countersigned by Charge Nurse Lockdown and witnessed by Nurse Ratchet (whose witness signature has caused three separate legal scholars to experience what Dr. Graves clinically describes as "a significant wellness opportunity"), agrees that any visitor who discovers too much shall be admitted for rest and recuperation until their memories become suitably vague and their paperwork permanently misfiled.`,
+    treats:[
+      {title:"Nurse Lockdown's Welcome Tea",text:`Lucy appears at the padded cell door holding a tray with two cups of tea. "One for you," she says warmly, "and one for your file." The tea is surprisingly good. You feel slightly more cooperative than usual for the rest of the evening. You decide this is fine.`,effect:'+3 candies · Immunity from next trick',points:3},
+      {title:"Dr. Graves's Professional Assessment",text:`Dr. Graves opens the door, studies you for a long moment, writes something on his clipboard, and nods. "Remarkably well-adjusted," he says, with what might be surprise. "For now." He hands you a wrapped sweet. The wrapper reads 'DISCHARGED — Temporarily.'`,effect:'+4 candies',points:4},
+      {title:"Ratchet's Rare Approval",text:`The door opens. Nurse Ratchet stands in the doorway holding a small basket of sweets. She looks at you. She looks at the basket. She looks back at you. She holds out the basket. This is, staff will later confirm, the warmest greeting she has given anyone in eleven years.`,effect:'+5 candies',points:5},
+    ],
+    tricks:[
+      {title:"Admitted for Observation",text:`Dr. Graves opens the door with a warm smile. "Ah," he says, writing immediately. "Yes. I thought so." He hands you a form. It is already filled in. Your name is already on it. You don't know how. You are invited to stay for "observation." You decline. He makes a note.`,effect:'Lose 2 candies · Curses +1',points:-2},
+      {title:"Nurse Lockdown's Special Interest",text:`Lucy opens the door, looks at you, and her smile widens by exactly one notch. "Oh," she says softly, reaching for her keys. "You're the one." You are not sure what this means. You are sure you don't want to find out. You back away. She waves cheerfully. The keys jingle.`,effect:'Lose 3 candies · Curses +2',points:-3},
+      {title:"Ratchet's Note",text:`You knock. Nothing happens for a very long time. Then a small folded note slides under the door. It reads: "I know what you did at the last building. — R." Nothing else. The door does not open. You stand there for a moment. You leave quickly.`,effect:'Lose 1 candy · Curses +1 · Trick probability +10% for rest of game',points:-1},
+    ],
+  },
+  sisterhood:{
+    name:'Sisterhood of the Perpetual Cauldron',tag:'The Dark Wood Edge',emoji:'🧙',frag:4,
+    glowColor:'rgba(58,28,80,0.3)',
+    residents:'Agatha Bubblewick · Prudence Poxley · Gertie Grimladle',
+    lore:`The smoke from the Sisterhood's chimney smells different every night. Tonight it smells like something that used to be you. Agatha has been experimenting again. Prudence has filed a complaint. Gertie made it into a soup.`,
+    hiddenClue:`Gertie says there is something in the garden shed. Behind the spell book — the large one, not the medium one, she says the medium one bites. The fragment is wrapped in dock leaves. Try not to smell it.`,
+    fragDesc:`Fragment 4 of the Rotting Hill Compact. Found in a dock-leaf parcel in the Sisterhood's garden shed. It smells faintly of Gertie's Soup of Eternal Regret. This will fade. Eventually.`,
+    jackoHint:`A jack-o-lantern sits in the Sisterhood's cauldron garden with a name tag. Whose name is on the tag — Agatha, Prudence, or Gertie?`,
+    jackoAnswer:'gertie',
+    compactClause:`The Sisters agree to maintain the Forgetting Fog at the borough's perimeter at all times, thickening it on Halloween when the boundary between worlds is dangerously thin. Gertie also agrees to stop serving the Soup of Eternal Regret to unsuspecting visitors without a signed waiver. She has not agreed to this cheerfully.`,
+    treats:[
+      {title:"Agatha's Bold Brew Toffee",text:`Agatha presses a warm, sticky sweet into your hand. It smells faintly of seventeen things, six of which are identifiable. "I added a pinch more," she says, of something. It is extraordinary. You feel slightly altered. In a good way. Probably.`,effect:'+3 candies',points:3},
+      {title:"Prudence's Passive-Aggressive Blessing",text:`Prudence appears at the door, looks you up and down, and says "Bless you." A pause. "You'll need it." She hands you a small paper bag of boiled sweets. They are wonderful. A tiny card in the bag reads "This blessing expires at midnight."`,effect:'+4 candies',points:4},
+      {title:"Gertie's Ambiguous Hospitality",text:`Gertie opens the door holding a ladle. "Soup?" she asks. You decline. She looks relieved. "Good," she says, and gives you five candies instead. "Much safer." She winks at the cauldron. The cauldron makes a sound.`,effect:'+5 candies',points:5},
+    ],
+    tricks:[
+      {title:"The Soup",text:`Gertie offers soup before you can decline. You are polite. You accept a small bowl. It tastes wonderful. For the next forty-eight hours you will think, with great specificity, about every questionable decision you have ever made. Gertie watches you eat with professional satisfaction.`,effect:'Lose 2 candies · Curses +1 · Regret activated',points:-2},
+      {title:"Prudence's Boil Incident",text:`Prudence answers the door mid-spell. Something goes wrong. You are not harmed. You do, however, now have a small boil on your left thumb that glows faintly in the dark. Prudence apologises, awards it four stars for quality, and hands you her card.`,effect:'Lose 2 candies · Curses +2',points:-2},
+      {title:"Agatha's Experimental Sample",text:`Agatha gives you a sweet she describes as "almost definitely fine." You eat it. Everything tastes like cinnamon for the rest of the evening. Not unpleasantly. But relentlessly. Every single thing.`,effect:'Lose 1 candy · Curses +1',points:-1},
+    ],
+  },
+  enstein:{
+    name:"Dr. Frank Enstein's Gothic Castle",tag:'The Lightning Quarter',emoji:'⚡',frag:5,
+    glowColor:'rgba(30,70,110,0.3)',
+    residents:'Dr. Frank Enstein · Gerald (his creation)',
+    lore:`The lightning rod atop Dr. Enstein's castle has been struck 1,247 times. The doctor considers each one a successful experiment. His neighbors consider each one a noise complaint. His creation, Gerald, considers each one a Tuesday.`,
+    hiddenClue:`The laboratory tower. The roof hatch. It lifts off completely. Dr. Enstein says the fragment is on the operating table. Gerald says it is under the operating table. Gerald is right. Gerald is often right. This bothers Dr. Enstein considerably.`,
+    fragDesc:`Fragment 5 of the Rotting Hill Compact. Found in Dr. Enstein's laboratory tower, under the operating table, exactly as Gerald said. The operating table has restraints. They are unlocked. This is noted without further comment.`,
+    jackoHint:`A jack-o-lantern is bolted to the lightning rod at the top of Dr. Enstein's tower. Something is written on the bolt. What letter does it start with?`,
+    jackoAnswer:'g',
+    compactClause:`Dr. Enstein agrees that his experiments shall remain within the castle walls and that Gerald shall wear a hat in public so as not to alarm visitors unduly. Gerald has been informed of this clause. Gerald disagrees with it. Dr. Enstein has made a note of Gerald's disagreement. Gerald has made a note of Dr. Enstein making a note. This has been going on since 1887.`,
+    treats:[
+      {title:"Gerald's Offering",text:`Gerald answers the door. Gerald is very large and wearing a hat, which he is doing with great dignity and slightly compressed resentment. He holds out a paper bag of sweets. He does not speak. He nods. You take the sweets. You nod back. This is the most emotionally complex candy exchange you have ever experienced.`,effect:'+4 candies',points:4},
+      {title:"The Successful Experiment",text:`Dr. Enstein opens the door mid-gesture, clearly mid-sentence to someone else. "—which proves that electricity can, in fact, improve confectionery, and here is the evidence!" He thrusts a bag of sweets at you. They crackle faintly on your tongue. They are magnificent.`,effect:'+5 candies',points:5},
+      {title:"Dr. Enstein's Field Notes",text:`A tube is ejected from a slot in the castle door. Inside: three sweets and a rolled field note reading "Subject appears. Offering candies. Hypothesis: subject will be pleased. Experiment: successful." Gerald can be heard in the background saying "I told you it would work." Dr. Enstein can be heard not acknowledging this.`,effect:'+3 candies',points:3},
+    ],
+    tricks:[
+      {title:"The Accidental Activation",text:`The door opens. There is a loud noise from inside. Dr. Enstein appears in the doorway looking frantic. "Gerald," he says carefully, "has activated something." He pushes two candies into your hand and firmly closes the door. The noise from inside increases.`,effect:'Lose 1 candy · Curses +1',points:-1},
+      {title:"The Peer Review",text:`Dr. Enstein opens the door and immediately begins explaining an experiment in full technical detail. You stand there for eleven minutes. Gerald passes behind the doctor twice, making eye contact with you and shaking his head slightly. You lose three candies to the time cost.`,effect:'Lose 3 candies',points:-3},
+      {title:"Lightning Incident",text:`You knock on the door. The lightning rod above you is struck at this precise moment. You are not harmed. Your hair stands on end for the rest of the evening. Dr. Enstein opens the door, looks at your hair, and says "Interesting." He writes something down. He does not give you candy.`,effect:'Lose 2 candies · Curses +1',points:-2},
+    ],
+  },
+  dusk:{
+    name:'Dusk & Sons at Rotting Hill Cemetery',tag:'The Sacred & Quietly Final Quarter',emoji:'⚰️',frag:6,
+    glowColor:'rgba(30,60,30,0.25)',
+    residents:'Cornelius Dusk · Perpetua Dusk · The Permanent Guests',
+    lore:`Mr. Dusk is never surprised to see you. He has, after all, been expecting you for some time. Mrs. Dusk will ask if you have signed the guest book. It is not optional. The permanent guests are very welcoming.`,
+    hiddenClue:`Cornelius Dusk has left something for you at the front desk of the Emporium. He says you'll know which door to open. He also says not to break the seal on the Blackwood crypt. He said this quite firmly. Three times. Perpetua said it a fourth time and wrote it in the guest book.`,
+    fragDesc:`Fragment 6 of the Rotting Hill Compact. Found in the Dusk & Sons Funeral Emporium reception, beneath a miniature condolence book. This is the final fragment. All six pieces are now in your possession.`,
+    jackoHint:`A jack-o-lantern sits on top of one of the three crypts in Rotting Hill Cemetery. Which crypt — first, second, or third — is it on?`,
+    jackoAnswer:'second',
+    compactClause:`The Dusk family agrees to keep the Compact's original document, its signatories' true names, and the one secret that makes the Compact necessary — sealed in the Blackwood family crypt, third on the left — until such time as a player of sufficient bravery breaks the seal and reads what has been waiting there since 1887.`,
+    treats:[
+      {title:"Cornelius's Condolence Caramels",text:`Cornelius opens the Emporium door exactly the right amount and slides out a crystal dish of dark caramels. "With our compliments," he says, in the tone of a man who has said this at every occasion for 160 years and means it every time. They are extraordinary caramels.`,effect:'+3 candies',points:3},
+      {title:"Perpetua's Shortbread",text:`Perpetua appears from between two grave markers with a plate of shortbread. "For the living," she says warmly. "We find it's important to celebrate." She watches you eat with maternal satisfaction. Three permanent guests appear to watch as well from a respectful distance.`,effect:'+4 candies',points:4},
+      {title:"Pre-Arranged",text:`A small coffin-shaped box is on the cemetery gate when you arrive. Your name is on the lid, printed on a card in elegant black script. Inside: six exceptional sweets and a note: "We knew you'd come. We're so glad you did. — C & P Dusk." You decide not to ask how they knew.`,effect:'+6 candies · Fragment hint revealed',points:6},
+    ],
+    tricks:[
+      {title:"The Professional Assessment",text:`Cornelius opens the door fully, looks you up and down with calm professional interest, and says "We'll be seeing you again soon." He smiles once. He closes the door. You feel cold for the rest of the evening. You walk faster than usual to the next building.`,effect:'Curses +2',points:0},
+      {title:"The Guest Book",text:`Perpetua intercepts you at the gate with the guest book. It is very large. She insists you sign. You sign. You notice your name is already there — in different handwriting, dated 1887, with a note beside it that reads "Expected. Punctual. Well done." You lose two candies while processing this.`,effect:'Lose 2 candies · Curses +1',points:-2},
+      {title:"The Brochure",text:`Cornelius opens the door, hands you a brochure for their Early Planning services, and closes the door. The brochure has your name on it. It is personalised. It lists your preferred candy types. There is a section titled "What Your Friends Will Say." It is very accurate. You lose three candies to existential discomfort.`,effect:'Lose 3 candies · Curses +2',points:-3},
+    ],
+  },
+};
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+function getState(){try{return JSON.parse(localStorage.getItem('rh_state')||'{}')}catch{return{}}}
+function saveState(s){localStorage.setItem('rh_state',JSON.stringify(s))}
+function getBuildingState(id){const s=getState();return(s.buildings||{})[id]||{}}
+function setBuildingState(id,bs){
+  const s=getState();
+  if(!s.buildings)s.buildings={};
+  s.buildings[id]={...getBuildingState(id),...bs};
+  saveState(s);
+}
+function getTotalCandies(){
+  const s=getState();
+  return Object.values(s.buildings||{}).reduce((a,b)=>a+(b.candies||0),0)+(s.candies||0);
+}
+function collectFragment(id,fragNum){
+  const s=getState();
+  if(!s.fragments)s.fragments={};
+  s.fragments[fragNum]=true;
+  saveState(s);
+}
+
+// ── AUDIO (Web Audio API fallback) ───────────────────────────────────────────
+let audioCtx=null;
+function getAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function tryPlayMP3(path){
+  try{const a=new Audio(path);a.volume=0.7;a.play().catch(()=>{});}catch(e){}
+}
+function playTone(freq,type,dur,gain=0.12,delay=0){
+  try{
+    const ctx=getAudio(),osc=ctx.createOscillator(),g=ctx.createGain();
+    osc.connect(g);g.connect(ctx.destination);
+    osc.type=type;osc.frequency.value=freq;
+    const t=ctx.currentTime+delay;
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(gain,t+0.05);
+    g.gain.exponentialRampToValueAtTime(0.001,t+dur);
+    osc.start(t);osc.stop(t+dur+0.1);
+  }catch(e){}
+}
+function playDoorbell(id){
+  // Try MP3 first, fall back to generated tones
+  tryPlayMP3(`${id}/audio/doorbell.mp3`);
+  playTone(180,'sawtooth',0.9,0.05);
+  setTimeout(()=>{[880,1108,1318].forEach((f,i)=>playTone(f,'sine',1.8,0.1,i*0.06));},400);
+  setTimeout(()=>{[220,200,180,160].forEach((f,i)=>playTone(f,'sine',0.6,0.07,i*0.2));},1200);
+}
+function playTreatSound(id){
+  tryPlayMP3(`${id}/audio/treat.mp3`);
+  [523,659,784,1047,1319].forEach((f,i)=>playTone(f,'sine',0.45,0.1,i*0.08));
+}
+function playTrickSound(id){
+  tryPlayMP3(`${id}/audio/trick.mp3`);
+  [400,340,270,210].forEach((f,i)=>playTone(f,'sawtooth',0.55,0.09,i*0.14));
+}
+function playFragmentSound(){
+  [440,554,659,880,1109].forEach((f,i)=>playTone(f,'sine',0.6,0.12,i*0.1));
+  setTimeout(()=>{[880,1109].forEach((f,i)=>playTone(f,'triangle',1.2,0.08,i*0.15));},600);
+}
+function playJackoSound(){
+  [523,659,784,1047,1319,1047,784].forEach((f,i)=>playTone(f,'sine',0.4,0.1,i*0.07));
+}
+
+// ── OUTCOME PICKER ───────────────────────────────────────────────────────────
+function pickOutcome(b){
+  const roll=Math.random();
+  if(roll<0.55){const t=b.treats[Math.floor(Math.random()*b.treats.length)];return{kind:'treat',...t};}
+  else if(roll<0.90){const t=b.tricks[Math.floor(Math.random()*b.tricks.length)];return{kind:'trick',...t};}
+  else{return{kind:'clue',title:'A Compact Clue Surfaces',text:`As you stand at the ${b.name}, something shifts. A piece of the larger puzzle of Rotting Hill becomes momentarily clear. The Compact is closer than you thought.`,effect:'Mystery progress +1',points:0};}
+}
+
+// ── RENDER ───────────────────────────────────────────────────────────────────
+const params=new URLSearchParams(window.location.search);
+const bid=params.get('id')||'dreadmoor';
+const b=BUILDINGS[bid]||BUILDINGS.dreadmoor;
+const state=getState();
+const bs=getBuildingState(bid);
+const mode=state.mode||'trail';
+const playerName=state.name||'Visitor';
+
+// Mark visited
+setBuildingState(bid,{visited:true,visitCount:(bs.visitCount||0)+1});
+document.title=`${b.name} — Rotting Hill`;
+
+// Update atmosphere
+document.body.style.background=`radial-gradient(ellipse 70% 50% at 50% 0%, ${b.glowColor} 0%, transparent 60%), #0d0a0e`;
+
+const fragCollected=(state.fragments||{})[b.frag];
+const visitLog=bs.visitLog||[];
+const currentBs=getBuildingState(bid);
+document.getElementById('nav-candies').textContent=getTotalCandies();
+
+// ── Sections controlled post-ring
+let hasRung=false;
+
+const content=document.getElementById('content');
+content.innerHTML=`
+  <div class="building-emoji-wrap">
+    <div class="building-emoji-glow" style="background:radial-gradient(circle,${b.glowColor},transparent 70%)"></div>
+    <div class="building-emoji">${b.emoji}</div>
+  </div>
+  <div class="building-tag">${b.tag}</div>
+  <div class="building-title">${b.name}</div>
+  <div class="building-residents">${b.residents}</div>
+  <p class="building-lore">${b.lore}</p>
+  <div class="ornament">✦ ✦ ✦</div>
+
+  <!-- DOORBELL -->
+  <div class="doorbell-section">
+    <div class="doorbell-label">Press the doorbell if you dare</div>
+    <button class="doorbell-btn" id="doorbell-btn" aria-label="Press doorbell">🎃</button>
+    <div class="doorbell-dare">Knock, knock… who's there?</div>
+    <div class="sound-wave" id="sound-wave">
+      <div class="sound-bar"></div><div class="sound-bar"></div><div class="sound-bar"></div>
+      <div class="sound-bar"></div><div class="sound-bar"></div><div class="sound-bar"></div>
+      <div class="sound-bar"></div>
+    </div>
+  </div>
+
+  <!-- OUTCOME -->
+  <div class="outcome-card" id="outcome-card"></div>
+  <button class="ring-again-btn" id="ring-again">Ring Again →</button>
+
+  <!-- HIDDEN ELEMENT CLUE (shown after ringing) -->
+  <div class="hidden-section" id="hidden-section">
+    <div class="hidden-title">🔍 A Hidden Element Awaits</div>
+    <div class="hidden-clue">${b.hiddenClue}</div>
+  </div>
+
+  <!-- FRAGMENT REVEAL -->
+  <div class="fragment-reveal" id="frag-reveal">
+    ${fragCollected
+      ? `<div class="frag-already">🧩 Fragment ${b.frag} already collected ✓</div>`
+      : `<div class="frag-number">${b.frag}</div>
+         <div class="frag-label">Fragment ${b.frag} of 6 — The Rotting Hill Compact</div>
+         <div class="frag-desc">${b.fragDesc}</div>`
+    }
+  </div>
+
+  <div class="ornament">✦ ✦ ✦</div>
+
+  <!-- JACK-O HUNT (hidden for trail mode) -->
+  ${mode!=='trail'?`
+  <div class="jacko-section">
+    <div class="jacko-title">🎃 Hidden Jack-o-Lantern Hunt</div>
+    ${(state.jackoFound||{})[bid]
+      ? `<div class="jacko-found-msg">✦ Jack-o-Lantern Found & Recorded! ✦</div>`
+      : `<div class="jacko-hint">${b.jackoHint}</div>
+         <div class="jacko-row">
+           <input class="jacko-input" id="jacko-input" type="text" placeholder="Type your answer…"/>
+           <button class="jacko-submit" id="jacko-submit">Check</button>
+         </div>
+         <div class="jacko-msg" id="jacko-msg"></div>`
+    }
+  </div>`:''}
+
+  <!-- COMPACT CLAUSE (mystery + grandmaster modes) -->
+  ${(mode==='mystery'||mode==='grandmaster')?`
+  <div class="compact-section" id="compact-section">
+    <div class="compact-title">📜 The Rotting Hill Compact — Clause ${b.frag}</div>
+    <div class="compact-text">${b.compactClause}</div>
+  </div>`:''}
+
+  <!-- VISIT LOG -->
+  ${visitLog.length>0?`
+  <div class="visit-log-section">
+    <div class="vlog-title">Previous Visits</div>
+    <ul class="vlog-list">
+      ${visitLog.slice(-5).reverse().map(v=>`<li><span>${v.title}</span><span class="vlog-tag ${v.kind}">${v.kind}</span></li>`).join('')}
+    </ul>
+  </div>`:''}
+`;
+
+// Show compact clause immediately for eligible modes
+if(mode==='mystery'||mode==='grandmaster'){
+  document.getElementById('compact-section')?.classList.add('show');
+}
+
+// ── DOORBELL ─────────────────────────────────────────────────────────────────
+const btn=document.getElementById('doorbell-btn');
+const outcomeCard=document.getElementById('outcome-card');
+const ringAgain=document.getElementById('ring-again');
+const soundWave=document.getElementById('sound-wave');
+
+btn.addEventListener('click',()=>{
+  btn.disabled=true;
+  btn.classList.add('ringing');
+  soundWave.classList.add('active');
+  playDoorbell(bid);
+
+  setTimeout(()=>{
+    soundWave.classList.remove('active');
+    btn.classList.remove('ringing');
+    const outcome=pickOutcome(b);
+
+    // Apply to state
+    const curBs=getBuildingState(bid);
+    const newCandies=(curBs.candies||0)+Math.max(0,outcome.points);
+    const newCurses=(curBs.curses||0)+(outcome.points<=-2?1:0);
+    const newLog=[...(curBs.visitLog||[]),{title:outcome.title,kind:outcome.kind}];
+    setBuildingState(bid,{candies:newCandies,curses:newCurses,visitLog:newLog});
+    document.getElementById('nav-candies').textContent=getTotalCandies();
+
+    // Play sound
+    if(outcome.kind==='treat')setTimeout(()=>playTreatSound(bid),200);
+    else if(outcome.kind==='trick')setTimeout(()=>playTrickSound(bid),200);
+
+    // Render outcome
+    const icons={treat:'🍬',trick:'💀',clue:'📜'};
+    const labels={treat:'Trick or Treat — You got a treat!',trick:'Trick or Treat — Oh no, a trick!',clue:'A Compact Clue Surfaces'};
+    outcomeCard.innerHTML=`
+      <div class="outcome-header ${outcome.kind}">
+        <div class="outcome-icon">${icons[outcome.kind]}</div>
+        <div>
+          <div class="outcome-type ${outcome.kind}">${labels[outcome.kind]}</div>
+          <div class="outcome-title-text">${outcome.title}</div>
+        </div>
+      </div>
+      <div class="outcome-body">
+        <p class="outcome-text">${outcome.text}</p>
+        <span class="outcome-effect ${outcome.kind}">${outcome.effect}</span>
+      </div>`;
+    outcomeCard.classList.add('show');
+    ringAgain.style.display='block';
+
+    // Show hidden element clue
+    document.getElementById('hidden-section')?.classList.add('show');
+
+    // Show fragment (on first visit or if not yet collected)
+    if(!fragCollected){
+      collectFragment(bid,b.frag);
+      setTimeout(()=>{
+        playFragmentSound();
+        document.getElementById('frag-reveal')?.classList.add('show');
+      },1500);
+    }
+    hasRung=true;
+  },2400);
+});
+
+ringAgain.addEventListener('click',()=>{
+  outcomeCard.classList.remove('show');
+  ringAgain.style.display='none';
+  btn.disabled=false;
+});
+
+// ── JACK-O CHECK ──────────────────────────────────────────────────────────────
+const jackoSubmit=document.getElementById('jacko-submit');
+if(jackoSubmit){
+  jackoSubmit.addEventListener('click',()=>{
+    const val=(document.getElementById('jacko-input').value||'').toLowerCase().trim();
+    const msg=document.getElementById('jacko-msg');
+    if(val.includes(b.jackoAnswer.toLowerCase())){
+      const s=getState();
+      if(!s.jackoFound)s.jackoFound={};
+      s.jackoFound[bid]=true;
+      saveState(s);
+      playJackoSound();
+      document.querySelector('.jacko-section').innerHTML=`
+        <div class="jacko-title">🎃 Hidden Jack-o-Lantern Hunt</div>
+        <div class="jacko-found-msg">✦ You found the Jack-o-Lantern at ${b.name}! ✦<br>
+        <small style="color:var(--bone-dim);font-family:'IM Fell English',serif;font-style:italic;font-size:0.78rem;display:block;margin-top:0.3rem;">Mark it on your village map and carry on.</small></div>`;
+    } else {
+      msg.textContent='Hmm… that\'s not quite right. Look closer at the building…';
+      setTimeout(()=>{msg.textContent='';},3000);
+    }
+  });
+  document.getElementById('jacko-input')?.addEventListener('keyup',e=>{if(e.key==='Enter')jackoSubmit.click();});
+}
+</script>
+</body>
+</html>

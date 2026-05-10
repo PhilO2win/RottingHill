@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rotting Hill — Village Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0d0a0e;--parchment:#c8b89a;--blood:#7a1010;--blood-bright:#c01818;
+  --gold:#c8961e;--gold-dim:#7a5a0a;--bone:#d4c49a;--bone-dim:#8a7a5a;
+  --purple-deep:#2a1040;--green-rot:#1a3a1a;
+}
+body{background:var(--ink);color:var(--bone);font-family:'IM Fell English',serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:100;opacity:0.5;}
+.atmosphere{position:fixed;inset:0;background:radial-gradient(ellipse 70% 40% at 50% 0%,rgba(90,40,128,0.1) 0%,transparent 60%),radial-gradient(ellipse 50% 30% at 0% 100%,rgba(122,16,16,0.1) 0%,transparent 50%);pointer-events:none;z-index:0;}
+.moon{position:fixed;top:50px;right:70px;width:65px;height:65px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#fffde0,#f0d060 45%,#b08020 80%,#705010);box-shadow:0 0 30px 12px rgba(200,160,30,0.15);z-index:2;animation:moonFloat 10s ease-in-out infinite;}
+@keyframes moonFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+/* Resident card */
+.resident-card{position:relative;z-index:10;max-width:480px;margin:0 auto;padding:1.5rem;border:1px solid rgba(200,150,30,0.2);border-radius:2px;background:linear-gradient(135deg,#1a1218,#100d12);display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;}
+.resident-card::before{content:'';position:absolute;inset:4px;border:1px solid rgba(200,150,30,0.07);border-radius:1px;pointer-events:none;}
+.resident-avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#2a1818,#1a1018);border:1px solid rgba(200,150,30,0.3);display:flex;align-items:center;justify-content:center;font-size:1.8rem;flex-shrink:0;}
+.resident-info{flex:1;}
+.resident-name{font-family:'Cinzel',serif;font-size:1rem;font-weight:600;color:var(--bone);margin-bottom:0.15rem;}
+.resident-title{font-size:0.8rem;font-style:italic;color:var(--gold-dim);margin-bottom:0.3rem;}
+.resident-mode{font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--bone-dim);}
+.resident-stats{display:flex;gap:1rem;margin-left:auto;}
+.stat-item{text-align:center;}
+.stat-num{font-family:'Cinzel',serif;font-size:1.3rem;font-weight:600;color:var(--gold);}
+.stat-label{font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--bone-dim);}
+
+/* Header */
+header{position:relative;z-index:10;padding:2rem 1.5rem 0;}
+.borough-eyebrow{font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.45em;text-transform:uppercase;color:var(--gold-dim);text-align:center;margin-bottom:0.4rem;}
+.borough-title{font-family:'UnifrakturMaguntia',cursive;font-size:clamp(2.5rem,8vw,4rem);color:var(--gold);text-shadow:0 0 30px rgba(200,150,30,0.35);text-align:center;line-height:1;margin-bottom:0.25rem;}
+.borough-sub{font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.35em;text-transform:uppercase;color:var(--bone-dim);text-align:center;margin-bottom:1.5rem;}
+
+/* Fragment tracker */
+.fragment-tracker{max-width:480px;margin:0 auto 1.5rem;padding:0 1.5rem;}
+.frag-title{font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.35em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:0.6rem;text-align:center;}
+.frag-pips{display:flex;gap:0.4rem;justify-content:center;}
+.frag-pip{width:32px;height:32px;border-radius:50%;border:1px solid rgba(200,150,30,0.2);background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-family:'Cinzel',serif;color:var(--bone-dim);transition:all 0.3s;}
+.frag-pip.collected{border-color:rgba(200,150,30,0.7);background:rgba(200,150,30,0.15);color:var(--gold);box-shadow:0 0 10px rgba(200,150,30,0.2);}
+
+/* Borough progress */
+.progress-strip{max-width:480px;margin:0 auto 0.5rem;padding:0 1.5rem;}
+.progress-bar-wrap{height:3px;background:rgba(200,150,30,0.08);border-radius:2px;overflow:hidden;}
+.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--blood),var(--gold));border-radius:2px;transition:width 0.6s ease;}
+
+.ornament{font-size:0.9rem;color:var(--gold-dim);letter-spacing:0.5rem;opacity:0.3;text-align:center;margin:1rem 0;}
+
+/* Building grid */
+.village-grid{position:relative;z-index:10;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.25rem;max-width:860px;margin:0 auto;padding:0 1.5rem 2rem;}
+
+.building-card{background:linear-gradient(160deg,#18121a,#100d12);border:1px solid rgba(200,150,30,0.12);border-radius:2px;overflow:hidden;cursor:pointer;text-decoration:none;color:inherit;display:block;position:relative;transition:border-color 0.3s,transform 0.2s;}
+.building-card:hover{border-color:rgba(200,150,30,0.4);transform:translateY(-2px);}
+.building-card.visited{border-color:rgba(200,150,30,0.2);}
+
+.card-image-area{height:120px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.card-emoji{font-size:3.5rem;filter:drop-shadow(0 0 10px currentColor);transition:transform 0.3s;}
+.building-card:hover .card-emoji{transform:scale(1.1);}
+.card-glow{position:absolute;inset:0;opacity:0;transition:opacity 0.4s;pointer-events:none;}
+.building-card:hover .card-glow{opacity:1;}
+
+.card-body{padding:1rem 1.1rem 1.1rem;}
+.card-tag{font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:0.3rem;}
+.card-name{font-family:'Cinzel',serif;font-size:0.9rem;font-weight:600;color:var(--bone);margin-bottom:0.3rem;line-height:1.3;}
+.card-resident{font-size:0.75rem;color:var(--bone-dim);font-style:italic;margin-bottom:0.7rem;line-height:1.5;}
+.card-footer{display:flex;justify-content:space-between;align-items:center;}
+.card-visit-status{font-size:0.7rem;color:var(--bone-dim);display:flex;align-items:center;gap:0.3rem;}
+.card-cta{font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.2em;color:var(--gold);text-transform:uppercase;}
+.visited-dot{width:6px;height:6px;border-radius:50%;background:var(--green-rot);border:1px solid rgba(58,122,58,0.6);animation:pdot 2s ease-in-out infinite;}
+@keyframes pdot{0%,100%{opacity:1}50%{opacity:0.3}}
+
+.frag-badge{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:rgba(200,150,30,0.15);border:1px solid rgba(200,150,30,0.4);display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-family:'Cinzel',serif;color:var(--gold);}
+.frag-badge.found{background:rgba(200,150,30,0.25);box-shadow:0 0 8px rgba(200,150,30,0.3);}
+
+/* Bottom nav */
+.bottom-nav{position:relative;z-index:10;max-width:480px;margin:0 auto;padding:0 1.5rem 3rem;display:flex;gap:0.75rem;flex-wrap:wrap;}
+.nav-btn{flex:1;min-width:120px;background:rgba(0,0,0,0.3);border:1px solid rgba(200,150,30,0.15);border-radius:2px;color:var(--bone-dim);font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;padding:0.7rem;text-align:center;text-decoration:none;transition:all 0.2s;}
+.nav-btn:hover{border-color:rgba(200,150,30,0.4);color:var(--gold);}
+</style>
+</head>
+<body>
+<div class="atmosphere"></div>
+<div class="moon"></div>
+
+<header>
+  <div class="borough-eyebrow">The Borough of</div>
+  <div class="borough-title">Rotting Hill</div>
+  <div class="borough-sub">Scan each building · Collect fragments · Reveal the Compact</div>
+
+  <!-- Resident Card -->
+  <div style="padding:0 1.5rem;margin-bottom:1.5rem;">
+    <div class="resident-card" id="resident-card">
+      <div class="resident-avatar" id="r-avatar">👻</div>
+      <div class="resident-info">
+        <div class="resident-name" id="r-name">Loading…</div>
+        <div class="resident-title" id="r-title"></div>
+        <div class="resident-mode" id="r-mode"></div>
+      </div>
+      <div class="resident-stats">
+        <div class="stat-item"><div class="stat-num" id="r-candies">0</div><div class="stat-label">Candies</div></div>
+        <div class="stat-item"><div class="stat-num" id="r-curses">0</div><div class="stat-label">Curses</div></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Fragment tracker -->
+<div class="fragment-tracker">
+  <div class="frag-title">🧩 Rotting Hill Compact — Fragment Collection</div>
+  <div class="frag-pips" id="frag-pips">
+    <div class="frag-pip" data-frag="1">1</div>
+    <div class="frag-pip" data-frag="2">2</div>
+    <div class="frag-pip" data-frag="3">3</div>
+    <div class="frag-pip" data-frag="4">4</div>
+    <div class="frag-pip" data-frag="5">5</div>
+    <div class="frag-pip" data-frag="6">6</div>
+  </div>
+</div>
+
+<!-- Progress -->
+<div class="progress-strip">
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-bar" style="width:0%"></div></div>
+</div>
+
+<div class="ornament">✦ ✦ ✦</div>
+
+<!-- Building Grid -->
+<div class="village-grid" id="village-grid"></div>
+
+<div class="bottom-nav">
+  <a href="compact.html" class="nav-btn">📜 Mystery Trail</a>
+  <a href="compact.html" class="nav-btn">🗝 The Compact</a>
+  <a href="qr-generator.html" class="nav-btn">📱 QR Codes</a>
+  <a href="index.html?new=1" class="nav-btn" onclick="localStorage.removeItem('rh_state')">← New Player</a>
+</div>
+
+<script>
+const BUILDINGS = [
+  {id:'dreadmoor',name:'Dreadmoor Castle',tag:'The Black Cliffs',resident:'Count Aldric Dreadmoor',emoji:'🏰',glowColor:'122,16,16',frag:1},
+  {id:'shadowmere',name:'Shadowmere Manor',tag:'The Cursed Hill',resident:'The Blackwood Family',emoji:'🏚️',glowColor:'90,40,128',frag:2},
+  {id:'sanatorium',name:'Rotting Hill Sanatorium for Lost Minds',tag:'The Moors',resident:'Dr. Seymour Graves & Nursing Staff',emoji:'🏥',glowColor:'42,74,42',frag:3},
+  {id:'sisterhood',name:'Sisterhood of the Perpetual Cauldron',tag:'The Dark Wood Edge',resident:'Agatha, Prudence & Gertie',emoji:'🧙',glowColor:'58,28,80',frag:4},
+  {id:'enstein',name:"Dr. Frank Enstein's Gothic Castle",tag:'The Lightning Quarter',resident:'Dr. Frank Enstein & Gerald',emoji:'⚡',glowColor:'30,70,100',frag:5},
+  {id:'dusk',name:"Dusk & Sons at Rotting Hill Cemetery",tag:'The Sacred & Quietly Final Quarter',resident:'Cornelius & Perpetua Dusk',emoji:'⚰️',glowColor:'30,60,30',frag:6},
+];
+
+const MODE_LABELS = {trail:'Trick or Treat Trail',hunt:"Jack-o-Lantern Hunt",mystery:'Borough Mystery',grandmaster:'Grand Master'};
+const AVATARS = {'trail':'🎃','hunt':'👻','mystery':'🦇','grandmaster':'💀'};
+
+function getState(){try{return JSON.parse(localStorage.getItem('rh_state')||'{}')}catch{return{}}}
+
+// Immediate guard — don't wait for render()
+(function(){const s=getState();if(!s.name){window.location.replace('index.html');}})();
+
+function render(){
+  const state = getState();
+  if(!state.name){window.location.replace('index.html');return;}
+
+  // Resident card
+  document.getElementById('r-name').textContent = `${state.name} ${state.title}`;
+  document.getElementById('r-title').textContent = `Resident of Rotting Hill · Party of ${state.party||1}`;
+  document.getElementById('r-mode').textContent = MODE_LABELS[state.mode]||'';
+  document.getElementById('r-avatar').textContent = AVATARS[state.mode]||'👻';
+  document.getElementById('r-candies').textContent = state.candies||0;
+  document.getElementById('r-curses').textContent = state.curses||0;
+
+  // Fragment pips
+  const frags = state.fragments||{};
+  document.querySelectorAll('.frag-pip').forEach(pip=>{
+    if(frags[pip.dataset.frag]){pip.classList.add('collected');pip.textContent='✓';}
+  });
+
+  // Progress bar
+  const visited = BUILDINGS.filter(b=>(state.buildings||{})[b.id]?.visited).length;
+  document.getElementById('progress-bar').style.width=(visited/6*100)+'%';
+
+  // Building grid
+  const grid = document.getElementById('village-grid');
+  grid.innerHTML='';
+  BUILDINGS.forEach(b=>{
+    const bs=(state.buildings||{})[b.id]||{};
+    const fragCollected=frags[b.frag];
+    const card=document.createElement('a');
+    card.href=`building.html?id=${b.id}`;
+    card.className='building-card'+(bs.visited?' visited':'');
+    card.innerHTML=`
+      <div class="card-image-area" style="background:linear-gradient(160deg,#18121a,rgba(${b.glowColor},0.08))">
+        <div class="card-emoji">${b.emoji}</div>
+        <div class="card-glow" style="background:radial-gradient(ellipse at 50% 80%,rgba(${b.glowColor},0.15),transparent 70%)"></div>
+      </div>
+      ${fragCollected?`<div class="frag-badge found">🧩</div>`:`<div class="frag-badge">${b.frag}</div>`}
+      <div class="card-body">
+        <div class="card-tag">${b.tag}</div>
+        <div class="card-name">${b.name}</div>
+        <div class="card-resident">${b.resident}</div>
+        <div class="card-footer">
+          <div class="card-visit-status">
+            ${bs.visited?`<span class="visited-dot"></span> Visited ${bs.visitCount||1}×`:'⬜ Not yet visited'}
+            ${bs.jacko?' · 🎃':''}</div>
+          <div class="card-cta">Enter →</div>
+        </div>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+render();
+</script>
+</body>
+</html>

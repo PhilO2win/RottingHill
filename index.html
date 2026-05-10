@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rotting Hill — Enter If You Dare</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --ink: #0d0a0e;
+  --parchment: #c8b89a;
+  --parchment-dark: #a89070;
+  --blood: #7a1010;
+  --blood-bright: #c01818;
+  --gold: #c8961e;
+  --gold-dim: #7a5a0a;
+  --bone: #d4c49a;
+  --bone-dim: #8a7a5a;
+  --fog: #9aa8a0;
+  --green-rot: #2a4a2a;
+  --green-glow: #3a7a3a;
+  --purple-deep: #2a1040;
+  --purple-mid: #5a2880;
+}
+
+body {
+  background: var(--ink);
+  color: var(--bone);
+  font-family: 'IM Fell English', serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Grain texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0.6;
+}
+
+/* Atmospheric bg */
+.atmosphere {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(90,40,128,0.15) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 20% 100%, rgba(122,16,16,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 40% at 80% 100%, rgba(42,74,42,0.1) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Animated fog */
+.fog-wrap {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 300px;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+.fog-layer {
+  position: absolute;
+  bottom: 0;
+  left: -50%;
+  width: 200%;
+  height: 200px;
+  background: radial-gradient(ellipse 40% 100% at 25% 100%, rgba(154,168,160,0.08) 0%, transparent 70%),
+              radial-gradient(ellipse 40% 80% at 75% 100%, rgba(154,168,160,0.06) 0%, transparent 70%);
+  animation: fogDrift 25s linear infinite;
+}
+.fog-layer:nth-child(2) {
+  height: 120px;
+  animation-duration: 35s;
+  animation-direction: reverse;
+  opacity: 0.5;
+}
+@keyframes fogDrift { from{transform:translateX(0)} to{transform:translateX(25%)} }
+
+/* Stars */
+.stars {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: rgba(255,248,220,0.7);
+  animation: twinkle var(--d, 3s) ease-in-out infinite;
+  animation-delay: var(--dl, 0s);
+}
+@keyframes twinkle { 0%,100%{opacity:0.7} 50%{opacity:0.1} }
+
+/* Moon */
+.moon {
+  position: fixed;
+  top: 60px;
+  right: 100px;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #fffde0, #f0d060 45%, #b08020 80%, #705010);
+  box-shadow: 0 0 40px 15px rgba(200,160,30,0.2), 0 0 80px 30px rgba(200,160,30,0.08);
+  z-index: 2;
+  animation: moonFloat 10s ease-in-out infinite;
+}
+@keyframes moonFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+
+/* Main content */
+main {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 3rem 1.5rem 5rem;
+}
+
+/* Gate illustration area */
+.gate-area {
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.gate-svg-wrap {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto 1.5rem;
+  filter: drop-shadow(0 0 20px rgba(200,150,30,0.2));
+}
+
+/* Masthead */
+.masthead {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+.masthead-eyebrow {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  margin-bottom: 0.75rem;
+}
+.masthead-title {
+  font-family: 'UnifrakturMaguntia', cursive;
+  font-size: clamp(3.5rem, 12vw, 6rem);
+  color: var(--gold);
+  text-shadow: 0 0 40px rgba(200,150,30,0.4), 0 0 80px rgba(200,150,30,0.15);
+  line-height: 0.9;
+  margin-bottom: 0.5rem;
+}
+.masthead-sub {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(0.7rem, 2vw, 0.9rem);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+  margin-bottom: 1rem;
+}
+.masthead-lore {
+  font-style: italic;
+  color: var(--bone-dim);
+  font-size: 0.9rem;
+  line-height: 1.9;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.ornament {
+  font-size: 1rem;
+  color: var(--gold-dim);
+  letter-spacing: 0.6rem;
+  opacity: 0.4;
+  text-align: center;
+  margin: 1.5rem 0;
+}
+
+/* Registration form */
+.registration-scroll {
+  width: 100%;
+  max-width: 480px;
+  background: linear-gradient(160deg, #1a1218, #100d12);
+  border: 1px solid rgba(200,150,30,0.2);
+  border-radius: 2px;
+  padding: 2.5rem 2rem;
+  position: relative;
+  margin-bottom: 2rem;
+}
+.registration-scroll::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(200,150,30,0.08);
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+.scroll-title {
+  font-family: 'Cinzel', serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.field-group {
+  margin-bottom: 1.5rem;
+}
+.field-label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--bone-dim);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+.field-input {
+  width: 100%;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(200,150,30,0.2);
+  border-radius: 1px;
+  padding: 0.75rem 1rem;
+  color: var(--bone);
+  font-family: 'IM Fell English', serif;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.field-input:focus {
+  border-color: rgba(200,150,30,0.5);
+  box-shadow: 0 0 0 3px rgba(200,150,30,0.08);
+}
+.field-input::placeholder { color: var(--bone-dim); opacity: 0.4; }
+
+/* Mode selector */
+.mode-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.mode-card {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(200,150,30,0.12);
+  border-radius: 2px;
+  padding: 0.85rem 0.75rem;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  text-align: center;
+}
+.mode-card:hover { border-color: rgba(200,150,30,0.3); }
+.mode-card.selected {
+  border-color: rgba(200,150,30,0.6);
+  background: rgba(200,150,30,0.08);
+}
+.mode-icon { font-size: 1.5rem; margin-bottom: 0.3rem; }
+.mode-name {
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--bone);
+  letter-spacing: 0.1em;
+  margin-bottom: 0.2rem;
+}
+.mode-age {
+  font-size: 0.7rem;
+  color: var(--bone-dim);
+  font-style: italic;
+}
+
+/* Party size */
+.party-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.party-btn {
+  flex: 1;
+  min-width: 40px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(200,150,30,0.15);
+  border-radius: 2px;
+  padding: 0.5rem;
+  color: var(--bone-dim);
+  font-family: 'Cinzel', serif;
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+}
+.party-btn:hover { border-color: rgba(200,150,30,0.4); color: var(--bone); }
+.party-btn.selected {
+  border-color: rgba(200,150,30,0.6);
+  background: rgba(200,150,30,0.1);
+  color: var(--gold);
+}
+
+/* Enter button */
+.enter-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #3a1808, #5a2010);
+  border: 1px solid rgba(192,24,24,0.5);
+  border-radius: 2px;
+  color: var(--bone);
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.2em;
+  padding: 1rem;
+  cursor: pointer;
+  margin-top: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+  text-transform: uppercase;
+}
+.enter-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.05), transparent);
+  pointer-events: none;
+}
+.enter-btn:hover {
+  border-color: rgba(192,24,24,0.8);
+  box-shadow: 0 0 30px rgba(192,24,24,0.2);
+  transform: translateY(-1px);
+}
+.enter-btn:active { transform: translateY(0); }
+
+/* Warning text */
+.warning-text {
+  text-align: center;
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--bone-dim);
+  opacity: 0.5;
+  margin-top: 1rem;
+  line-height: 1.6;
+}
+
+/* Returning player */
+.returning-link {
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  text-decoration: none;
+  text-align: center;
+  display: block;
+  margin-top: 1rem;
+  transition: color 0.2s;
+}
+.returning-link:hover { color: var(--gold); }
+
+/* Building directory preview */
+.building-preview {
+  width: 100%;
+  max-width: 480px;
+}
+.preview-title {
+  font-family: 'Cinzel', serif;
+  font-size: 0.65rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  text-align: center;
+  margin-bottom: 1rem;
+}
+.preview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+.preview-item {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(200,150,30,0.08);
+  border-radius: 2px;
+  padding: 0.6rem 0.5rem;
+  text-align: center;
+  font-size: 1.5rem;
+}
+.preview-item-name {
+  font-family: 'Cinzel', serif;
+  font-size: 0.55rem;
+  color: var(--bone-dim);
+  margin-top: 0.25rem;
+  line-height: 1.3;
+  letter-spacing: 0.05em;
+}
+</style>
+</head>
+<body>
+
+<div class="atmosphere"></div>
+<div class="moon"></div>
+<div class="stars" id="stars"></div>
+<div class="fog-wrap">
+  <div class="fog-layer"></div>
+  <div class="fog-layer"></div>
+</div>
+
+<main>
+  <div class="masthead">
+    <div class="masthead-eyebrow">Welcome to the Borough of</div>
+    <div class="masthead-title">Rotting Hill</div>
+    <div class="masthead-sub">A Halloween Village Game · Est. 1887</div>
+    <p class="masthead-lore">
+      Six buildings. Six secrets. One Compact sealed in darkness for over a century.<br>
+      The residents of Rotting Hill have been expecting you.<br>
+      <em>They have been expecting you for quite some time.</em>
+    </p>
+  </div>
+
+  <!-- Gate SVG -->
+  <div class="gate-area">
+    <div class="gate-svg-wrap">
+      <svg viewBox="0 0 360 180" xmlns="http://www.w3.org/2000/svg">
+        <!-- Posts -->
+        <rect x="30" y="40" width="28" height="130" fill="#1a1218" stroke="#8a6a20" stroke-width="1"/>
+        <rect x="302" y="40" width="28" height="130" fill="#1a1218" stroke="#8a6a20" stroke-width="1"/>
+        <!-- Post caps -->
+        <polygon points="30,40 44,20 58,40" fill="#6a4a10" stroke="#8a6a20" stroke-width="1"/>
+        <polygon points="302,40 316,20 330,40" fill="#6a4a10" stroke="#8a6a20" stroke-width="1"/>
+        <!-- Lanterns on posts -->
+        <rect x="36" y="22" width="16" height="22" rx="2" fill="#1a1218" stroke="#8a6a20" stroke-width="0.8"/>
+        <rect x="308" y="22" width="16" height="22" rx="2" fill="#1a1218" stroke="#8a6a20" stroke-width="0.8"/>
+        <rect x="39" y="25" width="10" height="16" fill="rgba(200,150,30,0.3)"/>
+        <rect x="311" y="25" width="10" height="16" fill="rgba(200,150,30,0.3)"/>
+        <!-- Arch -->
+        <path d="M58 80 Q180 10 302 80" fill="none" stroke="#8a6a20" stroke-width="3"/>
+        <path d="M58 90 Q180 18 302 90" fill="none" stroke="#5a4a18" stroke-width="1"/>
+        <!-- Arch text -->
+        <path id="archPath" d="M80 85 Q180 18 280 85" fill="none"/>
+        <text font-family="serif" font-size="13" fill="#c8961e" letter-spacing="3">
+          <textPath href="#archPath" startOffset="10%">ROTTING HILL CEMETERY</textPath>
+        </text>
+        <!-- Gate bars left -->
+        <line x1="90" y1="80" x2="90" y2="170" stroke="#5a4520" stroke-width="4"/>
+        <line x1="110" y1="75" x2="110" y2="170" stroke="#5a4520" stroke-width="4"/>
+        <line x1="130" y1="72" x2="130" y2="170" stroke="#5a4520" stroke-width="4"/>
+        <line x1="150" y1="70" x2="150" y2="170" stroke="#5a4520" stroke-width="4"/>
+        <!-- Gate bars right -->
+        <line x1="210" y1="70" x2="210" y2="170" stroke="#5a4520" stroke-width="4"/>
+        <line x1="230" y1="72" x2="230" y2="170" stroke="#5a4520" stroke-width="4"/>
+        <line x1="250" y1="75" x2="250" y2="170" stroke="#5a4520" stroke-width="4"/>
+        <line x1="270" y1="80" x2="270" y2="170" stroke="#5a4520" stroke-width="4"/>
+        <!-- Spear tips -->
+        <polygon points="88,80 90,68 92,80" fill="#8a6a20"/>
+        <polygon points="108,75 110,63 112,75" fill="#8a6a20"/>
+        <polygon points="128,72 130,60 132,72" fill="#8a6a20"/>
+        <polygon points="148,70 150,58 152,70" fill="#8a6a20"/>
+        <polygon points="208,70 210,58 212,70" fill="#8a6a20"/>
+        <polygon points="228,72 230,60 232,72" fill="#8a6a20"/>
+        <polygon points="248,75 250,63 252,75" fill="#8a6a20"/>
+        <polygon points="268,80 270,68 272,80" fill="#8a6a20"/>
+        <!-- Center ornament -->
+        <circle cx="180" cy="70" r="12" fill="#1a1218" stroke="#8a6a20" stroke-width="1.5"/>
+        <text x="180" y="75" text-anchor="middle" font-size="14" fill="#c8961e">☽</text>
+        <!-- Ground -->
+        <rect x="0" y="168" width="360" height="12" fill="#1a1218"/>
+        <path d="M0 168 Q90 158 180 168 Q270 158 360 168" fill="none" stroke="#3a2a10" stroke-width="1"/>
+        <!-- Fog at base -->
+        <ellipse cx="180" cy="172" rx="180" ry="12" fill="rgba(154,168,160,0.06)"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="ornament">✦ ✦ ✦</div>
+
+  <!-- Registration Form -->
+  <div class="registration-scroll">
+    <div class="scroll-title">📜 Register as a Resident — If You Dare</div>
+
+    <div class="field-group">
+      <label class="field-label" for="player-name">Your Name</label>
+      <input class="field-input" type="text" id="player-name" placeholder="Enter your name, brave soul…" maxlength="40" autocomplete="off"/>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Choose Your Game Mode</label>
+      <div class="mode-grid">
+        <div class="mode-card selected" data-mode="trail" onclick="selectMode(this)">
+          <div class="mode-icon">🍬</div>
+          <div class="mode-name">Trick or Treat Trail</div>
+          <div class="mode-age">Ages 5+ · Quick & Sweet</div>
+        </div>
+        <div class="mode-card" data-mode="hunt" onclick="selectMode(this)">
+          <div class="mode-icon">🎃</div>
+          <div class="mode-name">Jack-o-Lantern Hunt</div>
+          <div class="mode-age">Ages 8+ · Hidden Secrets</div>
+        </div>
+        <div class="mode-card" data-mode="mystery" onclick="selectMode(this)">
+          <div class="mode-icon">📜</div>
+          <div class="mode-name">Borough Mystery</div>
+          <div class="mode-age">Ages 12+ · Full Story</div>
+        </div>
+        <div class="mode-card" data-mode="grandmaster" onclick="selectMode(this)">
+          <div class="mode-icon">💀</div>
+          <div class="mode-name">Grand Master</div>
+          <div class="mode-age">Adults · The Full Compact</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Party Size</label>
+      <div class="party-row" id="party-row">
+        <div class="party-btn selected" data-size="1" onclick="selectParty(this)">Solo</div>
+        <div class="party-btn" data-size="2" onclick="selectParty(this)">2</div>
+        <div class="party-btn" data-size="3" onclick="selectParty(this)">3</div>
+        <div class="party-btn" data-size="4" onclick="selectParty(this)">4+</div>
+      </div>
+    </div>
+
+    <button class="enter-btn" onclick="enterVillage()">
+      ☽ Enter Rotting Hill ☾
+    </button>
+    <p class="warning-text">By entering, you acknowledge that Rotting Hill accepts no responsibility<br>for alterations to memory, disposition, or hair colour.</p>
+    <a href="village-map.html" class="returning-link">Already registered? Return to the Village →</a>
+  </div>
+
+  <div class="ornament">✦ ✦ ✦</div>
+
+  <div class="building-preview">
+    <div class="preview-title">The Six Buildings of Rotting Hill</div>
+    <div class="preview-grid">
+      <div class="preview-item">🏰<div class="preview-item-name">Dreadmoor Castle</div></div>
+      <div class="preview-item">🏚️<div class="preview-item-name">Shadowmere Manor</div></div>
+      <div class="preview-item">🏥<div class="preview-item-name">Rotting Hill Sanatorium</div></div>
+      <div class="preview-item">🧙<div class="preview-item-name">Sisterhood of the Perpetual Cauldron</div></div>
+      <div class="preview-item">⚡<div class="preview-item-name">Dr. Frank Enstein's Castle</div></div>
+      <div class="preview-item">⚰️<div class="preview-item-name">Dusk & Sons Cemetery</div></div>
+    </div>
+  </div>
+</main>
+
+<script>
+// Villain titles pool
+const VILLAIN_TITLES = [
+  'the Fearless','the Doomed','the Suspiciously Brave','the Regrettably Curious',
+  'the Boldly Unwise','the Disturbingly Cheerful','the Famously Unwise',
+  'the Persistently Alive (For Now)','the Notoriously Inquisitive',
+  'the Heroically Misguided','the Optimistically Foolish','the Historically Unlucky'
+];
+
+// If already registered and not resetting, go straight to village map
+(function(){
+  try {
+    const s = JSON.parse(localStorage.getItem('rh_state') || '{}');
+    // Only auto-redirect if they have a name AND came here via normal navigation
+    // (not via the "New Player" button which adds ?new=1)
+    const params = new URLSearchParams(window.location.search);
+    if(s.name && !params.get('new')) {
+      window.location.replace('village-map.html');
+    }
+    // Pre-fill name if returning via ?new=1
+    if(s.name && params.get('new')) {
+      document.addEventListener('DOMContentLoaded', ()=>{
+        const input = document.getElementById('player-name');
+        if(input) input.placeholder = 'Enter a new name or keep exploring…';
+      });
+    }
+  } catch(e) {}
+})();
+
+// Generate stars
+const starsEl = document.getElementById('stars');
+for(let i=0;i<80;i++){
+  const s = document.createElement('div');
+  s.className = 'star';
+  s.style.left = Math.random()*100+'%';
+  s.style.top = Math.random()*60+'%';
+  s.style.setProperty('--d', (2+Math.random()*4)+'s');
+  s.style.setProperty('--dl', (Math.random()*4)+'s');
+  s.style.opacity = 0.3+Math.random()*0.7;
+  starsEl.appendChild(s);
+}
+
+let selectedMode = 'trail';
+let selectedParty = '1';
+
+function selectMode(el) {
+  document.querySelectorAll('.mode-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedMode = el.dataset.mode;
+}
+
+function selectParty(el) {
+  document.querySelectorAll('.party-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedParty = el.dataset.size;
+}
+
+function enterVillage() {
+  const name = document.getElementById('player-name').value.trim();
+  if(!name) {
+    document.getElementById('player-name').style.borderColor='rgba(192,24,24,0.6)';
+    document.getElementById('player-name').placeholder = 'The village requires your name…';
+    return;
+  }
+  const title = VILLAIN_TITLES[Math.floor(Math.random()*VILLAIN_TITLES.length)];
+  const sessionId = Math.random().toString(36).substr(2,9);
+  const state = {
+    name, title, mode: selectedMode, party: selectedParty,
+    sessionId, registered: Date.now(),
+    candies: 0, curses: 0,
+    buildings: {},
+    fragments: {},
+    jackoFound: {}
+  };
+  localStorage.setItem('rh_state', JSON.stringify(state));
+  window.location.href = 'village-map.html';
+}
+</script>
+</body>
+</html>

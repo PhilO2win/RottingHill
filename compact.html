@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Rotting Hill Compact</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&family=IM+Fell+English:ital@0;1&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0d0a0e;--gold:#c8961e;--gold-dim:#7a5a0a;--bone:#d4c49a;--bone-dim:#8a7a5a;
+  --blood:#7a1010;--blood-bright:#c01818;--purple:#6a30a0;--purple-bright:#a060e0;
+  --green:#2a6a30;--green-bright:#40b050;
+}
+body{background:var(--ink);color:var(--bone);font-family:'IM Fell English',serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:100;opacity:0.5;}
+.atmo{position:fixed;inset:0;background:radial-gradient(ellipse 70% 40% at 50% 0%,rgba(106,48,160,0.12) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 30% 100%,rgba(122,16,16,0.1) 0%,transparent 50%);pointer-events:none;z-index:0;}
+
+.topnav{position:relative;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;border-bottom:1px solid rgba(200,150,30,0.08);}
+.back-link{font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.25em;color:var(--gold-dim);text-decoration:none;text-transform:uppercase;transition:color 0.2s;}
+.back-link:hover{color:var(--gold);}
+
+.content{position:relative;z-index:10;max-width:560px;margin:0 auto;padding:2rem 1.5rem 5rem;}
+
+/* Header */
+.page-eyebrow{font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.4em;text-transform:uppercase;color:var(--gold-dim);text-align:center;margin-bottom:0.5rem;}
+.page-title{font-family:'UnifrakturMaguntia',cursive;font-size:clamp(2rem,8vw,3.5rem);color:var(--gold);text-shadow:0 0 25px rgba(200,150,30,0.3);text-align:center;line-height:1;margin-bottom:0.3rem;}
+.page-sub{font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--bone-dim);text-align:center;margin-bottom:2rem;}
+
+.ornament{font-size:0.9rem;color:var(--gold-dim);letter-spacing:0.5rem;opacity:0.3;text-align:center;margin:1.5rem 0;}
+
+/* Stat row */
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;margin-bottom:1.5rem;}
+.stat-box{background:#100d12;border:1px solid rgba(200,150,30,0.12);border-radius:2px;padding:0.85rem;text-align:center;}
+.stat-n{font-family:'Cinzel',serif;font-size:1.6rem;font-weight:600;color:var(--gold);}
+.stat-l{font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--bone-dim);margin-top:0.2rem;}
+
+/* Fragment tracker */
+.frag-section{background:#100d12;border:1px solid rgba(200,150,30,0.15);border-radius:2px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;}
+.section-title{font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.35em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:1rem;}
+.frag-list{list-style:none;}
+.frag-item{display:flex;align-items:flex-start;gap:0.75rem;padding:0.6rem 0;border-bottom:1px solid rgba(200,150,30,0.05);}
+.frag-item:last-child{border-bottom:none;}
+.frag-dot{width:28px;height:28px;border-radius:50%;border:1px solid rgba(200,150,30,0.2);background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-family:'Cinzel',serif;color:var(--bone-dim);flex-shrink:0;margin-top:1px;transition:all 0.3s;}
+.frag-dot.collected{border-color:rgba(200,150,30,0.6);background:rgba(200,150,30,0.12);color:var(--gold);box-shadow:0 0 8px rgba(200,150,30,0.15);}
+.frag-info{flex:1;}
+.frag-building{font-family:'Cinzel',serif;font-size:0.75rem;font-weight:600;color:var(--bone);margin-bottom:0.2rem;}
+.frag-clause{font-size:0.78rem;font-style:italic;color:var(--bone-dim);line-height:1.65;}
+
+/* Jacko tracker */
+.jacko-section{background:#100d12;border:1px solid rgba(200,150,30,0.12);border-radius:2px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;}
+.jacko-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;}
+.jacko-item{display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0.5rem;border:1px solid rgba(200,150,30,0.06);border-radius:1px;}
+.jacko-status{width:20px;height:20px;border-radius:50%;border:1px solid rgba(200,150,30,0.15);display:flex;align-items:center;justify-content:center;font-size:0.65rem;flex-shrink:0;}
+.jacko-status.found{background:rgba(40,96,48,0.3);border-color:rgba(64,176,80,0.4);color:var(--green-bright);}
+.jacko-name{font-size:0.75rem;color:var(--bone-dim);line-height:1.3;}
+
+/* Compact document */
+.compact-doc{background:linear-gradient(160deg,#18120a,#100c06);border:1px solid rgba(200,150,30,0.25);border-radius:2px;padding:2rem;margin-bottom:1.5rem;position:relative;}
+.compact-doc::before{content:'';position:absolute;inset:8px;border:1px solid rgba(200,150,30,0.08);border-radius:1px;pointer-events:none;}
+.compact-doc-title{font-family:'UnifrakturMaguntia',cursive;font-size:1.6rem;color:var(--gold);text-align:center;margin-bottom:0.25rem;}
+.compact-doc-sub{font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold-dim);text-align:center;margin-bottom:1.25rem;}
+.compact-rule{border:none;border-top:1px solid rgba(200,150,30,0.2);margin:1rem 0;}
+.compact-body{font-style:italic;color:var(--bone);line-height:1.9;font-size:0.88rem;}
+.compact-body p{margin-bottom:0.85rem;}
+.compact-player{color:var(--gold);font-family:'Playfair Display',serif;font-style:italic;font-weight:700;}
+.compact-signatories{margin-top:1.25rem;border-top:1px solid rgba(200,150,30,0.15);padding-top:1rem;display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;}
+.signatory{font-size:0.72rem;color:var(--bone-dim);font-style:italic;display:flex;align-items:center;gap:0.4rem;}
+.sig-mark{color:var(--gold);font-size:0.8rem;}
+
+/* Grand Master reveal */
+.grand-master{background:linear-gradient(160deg,#1a0a18,#100812);border:1px solid rgba(106,48,160,0.35);border-radius:2px;padding:2rem;margin-bottom:1.5rem;display:none;animation:gmReveal 1s ease-out forwards;}
+.grand-master.show{display:block;}
+@keyframes gmReveal{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.gm-eyebrow{font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.4em;text-transform:uppercase;color:var(--purple-bright);text-align:center;margin-bottom:0.5rem;opacity:0.8;}
+.gm-title{font-family:'UnifrakturMaguntia',cursive;font-size:2rem;color:var(--purple-bright);text-align:center;margin-bottom:1.25rem;text-shadow:0 0 20px rgba(160,96,224,0.4);}
+.gm-body{font-style:italic;color:var(--bone);line-height:1.9;font-size:0.9rem;margin-bottom:1.25rem;}
+.gm-body p{margin-bottom:0.85rem;}
+.gm-player{color:var(--purple-bright);font-family:'Playfair Display',serif;font-style:italic;font-weight:700;}
+.crypt-reveal{background:rgba(106,48,160,0.1);border-left:3px solid rgba(106,48,160,0.5);padding:1rem;margin:1.25rem 0;font-style:italic;color:var(--bone);line-height:1.85;font-size:0.9rem;}
+.gm-instruction{font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--purple-bright);text-align:center;padding:0.75rem;border:1px solid rgba(106,48,160,0.3);border-radius:2px;margin-top:1rem;animation:instrGlow 2s ease-in-out infinite;}
+@keyframes instrGlow{0%,100%{box-shadow:0 0 10px rgba(106,48,160,0.1)}50%{box-shadow:0 0 20px rgba(106,48,160,0.3)}}
+
+/* Locked state */
+.locked-section{background:#100d12;border:1px solid rgba(200,150,30,0.08);border-radius:2px;padding:1.5rem;text-align:center;margin-bottom:1.5rem;}
+.locked-icon{font-size:2.5rem;margin-bottom:0.75rem;}
+.locked-text{font-style:italic;color:var(--bone-dim);font-size:0.88rem;line-height:1.8;}
+.locked-progress{font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.2em;color:var(--gold-dim);margin-top:0.75rem;}
+
+/* Certificate */
+.certificate-wrap{text-align:center;margin-bottom:1.5rem;}
+.certificate-btn{background:linear-gradient(135deg,#1a1408,#2a1e08);border:1px solid rgba(200,150,30,0.4);border-radius:2px;color:var(--gold);font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.25em;text-transform:uppercase;padding:0.75rem 1.5rem;cursor:pointer;transition:all 0.2s;}
+.certificate-btn:hover{border-color:var(--gold);box-shadow:0 0 20px rgba(200,150,30,0.15);}
+
+/* Newspaper links */
+.gazette-section{background:#100d12;border:1px solid rgba(200,150,30,0.1);border-radius:2px;padding:1.25rem 1.5rem;margin-bottom:1.5rem;}
+.gazette-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-top:0.75rem;}
+.gazette-link{display:block;padding:0.5rem 0.6rem;border:1px solid rgba(200,150,30,0.1);border-radius:1px;text-decoration:none;color:var(--bone-dim);font-size:0.78rem;font-style:italic;transition:all 0.2s;text-align:center;}
+.gazette-link:hover{border-color:rgba(200,150,30,0.3);color:var(--bone);}
+.gazette-link.visited-bld{border-color:rgba(200,150,30,0.2);color:var(--bone);}
+
+.reset-btn{background:transparent;border:1px solid rgba(122,16,16,0.3);border-radius:2px;color:rgba(192,24,24,0.5);font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;padding:0.5rem 1rem;cursor:pointer;display:block;margin:0 auto;transition:all 0.2s;}
+.reset-btn:hover{border-color:var(--blood-bright);color:var(--blood-bright);}
+</style>
+</head>
+<body>
+<div class="atmo"></div>
+<nav class="topnav">
+  <a href="village-map.html" class="back-link">← Village Map</a>
+  <a href="gazette.html" class="back-link" id="gazette-link" style="display:none">📜 Gazette</a>
+</nav>
+
+<div class="content">
+  <div class="page-eyebrow">The Secret of</div>
+  <div class="page-title">Rotting Hill</div>
+  <div class="page-sub">The Compact · Mystery Trail · Grand Master Reveal</div>
+
+  <!-- Stats -->
+  <div class="stat-row" id="stat-row">
+    <div class="stat-box"><div class="stat-n" id="s-candies">0</div><div class="stat-l">Candies</div></div>
+    <div class="stat-box"><div class="stat-n" id="s-visited">0/6</div><div class="stat-l">Buildings</div></div>
+    <div class="stat-box"><div class="stat-n" id="s-frags">0/6</div><div class="stat-l">Fragments</div></div>
+  </div>
+
+  <div class="ornament">✦ ✦ ✦</div>
+
+  <!-- Fragment tracker -->
+  <div class="frag-section">
+    <div class="section-title">🧩 The Rotting Hill Compact — Fragment Collection</div>
+    <ul class="frag-list" id="frag-list"></ul>
+  </div>
+
+  <!-- Jacko tracker -->
+  <div class="jacko-section" id="jacko-section" style="display:none">
+    <div class="section-title">🎃 Jack-o-Lantern Hunt Progress</div>
+    <div class="jacko-grid" id="jacko-grid"></div>
+  </div>
+
+  <div class="ornament">✦ ✦ ✦</div>
+
+  <!-- Compact document (unlocked when all 6 fragments collected) -->
+  <div id="compact-doc-wrap"></div>
+
+  <!-- Grand Master reveal -->
+  <div class="grand-master" id="grand-master"></div>
+
+  <div class="ornament">✦ ✦ ✦</div>
+
+  <!-- Gazette links -->
+  <div class="gazette-section">
+    <div class="section-title">📰 The Midnight Gazette — Your Personalized Editions</div>
+    <div class="gazette-grid" id="gazette-grid"></div>
+  </div>
+
+  <button class="reset-btn" onclick="resetGame()">Reset Game Progress</button>
+</div>
+
+<script>
+const BUILDINGS=[
+  {id:'dreadmoor',name:'Dreadmoor Castle',emoji:'🏰',frag:1,clause:'Count Dreadmoor ensures no visitor remembers the route in.'},
+  {id:'shadowmere',name:'Shadowmere Manor',emoji:'🏚️',frag:2,clause:'The Blackwoods keep Rotting Hill off all maps and records.'},
+  {id:'sanatorium',name:'Rotting Hill Sanatorium',emoji:'🏥',frag:3,clause:'Dr. Graves admits and files anyone who discovers too much.'},
+  {id:'sisterhood',name:'Sisterhood of the Perpetual Cauldron',emoji:'🧙',frag:4,clause:'The Sisters maintain the Forgetting Fog at the perimeter.'},
+  {id:'enstein',name:"Dr. Frank Enstein's Castle",emoji:'⚡',frag:5,clause:'Enstein keeps experiments contained; Gerald wears the hat.'},
+  {id:'dusk',name:"Dusk & Sons at Rotting Hill Cemetery",emoji:'⚰️',frag:6,clause:'The Dusk family guards the Compact document in the Blackwood crypt.'},
+];
+const MODE_LABELS={trail:'Trick or Treat Trail',hunt:'Jack-o-Lantern Hunt',mystery:'Borough Mystery',grandmaster:'Grand Master'};
+
+function getState(){try{return JSON.parse(localStorage.getItem('rh_state')||'{}')}catch{return{}}}
+function saveState(s){localStorage.setItem('rh_state',JSON.stringify(s))}
+
+// Immediate guard
+(function(){const s=getState();if(!s.name){window.location.replace('index.html');}})();
+
+function render(){
+  const state=getState();
+  if(!state.name){window.location.href='index.html';return;}
+  const name=state.name||'Visitor';
+  const N=`<span class="compact-player">${name}</span>`;
+  const frags=state.fragments||{};
+  const jacko=state.jackoFound||{};
+  const buildings=state.buildings||{};
+  const mode=state.mode||'trail';
+
+  // Stats
+  const totalCandies=Object.values(buildings).reduce((a,b)=>a+(b.candies||0),0);
+  const visitedCount=BUILDINGS.filter(b=>buildings[b.id]?.visited).length;
+  const fragCount=Object.keys(frags).length;
+  document.getElementById('s-candies').textContent=totalCandies;
+  document.getElementById('s-visited').textContent=`${visitedCount}/6`;
+  document.getElementById('s-frags').textContent=`${fragCount}/6`;
+
+  // Fragment list
+  const fragList=document.getElementById('frag-list');
+  fragList.innerHTML=BUILDINGS.map(b=>{
+    const collected=!!frags[b.frag];
+    return `<li class="frag-item">
+      <div class="frag-dot ${collected?'collected':''}">${collected?'✓':b.frag}</div>
+      <div class="frag-info">
+        <div class="frag-building">${b.emoji} ${b.name}</div>
+        <div class="frag-clause">${collected?b.clause:'Not yet collected — visit this building to find it.'}</div>
+      </div>
+    </li>`;
+  }).join('');
+
+  // Jacko grid (show for hunt/mystery/grandmaster)
+  if(mode!=='trail'){
+    document.getElementById('jacko-section').style.display='block';
+    document.getElementById('jacko-grid').innerHTML=BUILDINGS.map(b=>`
+      <div class="jacko-item">
+        <div class="jacko-status ${jacko[b.id]?'found':''}">${jacko[b.id]?'✓':'?'}</div>
+        <div class="jacko-name">${b.emoji} ${b.name}</div>
+      </div>`).join('');
+  }
+
+  // Gazette links
+  const gazetteGrid=document.getElementById('gazette-grid');
+  gazetteGrid.innerHTML=BUILDINGS.map(b=>`
+    <a class="gazette-link ${buildings[b.id]?.visited?'visited-bld':''}" href="gazette.html?building=${b.id}">
+      ${b.emoji} ${b.name}
+    </a>`).join('');
+
+  // Compact document
+  const allCollected=fragCount>=6;
+  const docWrap=document.getElementById('compact-doc-wrap');
+
+  if(allCollected){
+    docWrap.innerHTML=`
+    <div class="compact-doc">
+      <div class="compact-doc-title">The Rotting Hill Compact</div>
+      <div class="compact-doc-sub">Sealed 1887 · Six Signatories · One Secret</div>
+      <hr class="compact-rule">
+      <div class="compact-body">
+        <p>Be it known that the undersigned residents of Rotting Hill, gathered on the thirty-first day of October in the year eighteen hundred and eighty-seven, do hereby enter into the following Compact, to be kept in perpetuity, sealed in the Blackwood family crypt, and known only to those of sufficient persistence to collect all that has been hidden herein.</p>
+        <p>The purpose of this Compact is to protect one truth above all others: that Rotting Hill is not a place one visits. It is a place one has always belonged to.</p>
+        <p>Every visitor who has walked these streets, opened these doors, and assembled these fragments — their name was written here before they arrived. The Compact has always known them. It has known ${N} since before ${name} knew of it.</p>
+        <p>The six clauses of this Compact have now been revealed to ${N}, who has demonstrated the persistence, curiosity, and frankly impractical bravery required to collect them all. The signatories acknowledge this with a mixture of admiration and the mild professional concern that comes from having one's secrets assembled so completely.</p>
+        <hr class="compact-rule">
+        <p><em>Clause I:</em> ${BUILDINGS[0].clause}</p>
+        <p><em>Clause II:</em> ${BUILDINGS[1].clause}</p>
+        <p><em>Clause III:</em> ${BUILDINGS[2].clause}</p>
+        <p><em>Clause IV:</em> ${BUILDINGS[3].clause}</p>
+        <p><em>Clause V:</em> ${BUILDINGS[4].clause}</p>
+        <p><em>Clause VI:</em> ${BUILDINGS[5].clause}</p>
+        <hr class="compact-rule">
+        <p>Signed and sealed this All Hallows Eve, in the borough of Rotting Hill, by those whose names have kept these streets from all maps, all records, and all but the most determined visitors.</p>
+        <p><em>Witnessed by: ${N}. Halloween, ${new Date().getFullYear()}.</em></p>
+      </div>
+      <div class="compact-signatories">
+        <div class="signatory"><span class="sig-mark">✦</span> Count Aldric Dreadmoor</div>
+        <div class="signatory"><span class="sig-mark">✦</span> The Blackwood Family</div>
+        <div class="signatory"><span class="sig-mark">✦</span> Dr. Seymour Graves</div>
+        <div class="signatory"><span class="sig-mark">✦</span> The Sisterhood (A.B., P.P., G.G.)</div>
+        <div class="signatory"><span class="sig-mark">✦</span> Dr. Frank Enstein (& Gerald)</div>
+        <div class="signatory"><span class="sig-mark">✦</span> Cornelius & Perpetua Dusk</div>
+      </div>
+    </div>
+    <div class="certificate-wrap">
+      <button class="certificate-btn" onclick="printCertificate()">🏆 Print Grand Master Certificate</button>
+    </div>`;
+
+    // Grand Master reveal
+    if(mode==='grandmaster'){
+      const gmEl=document.getElementById('grand-master');
+      gmEl.classList.add('show');
+      gmEl.innerHTML=`
+        <div class="gm-eyebrow">Grand Master Unlock — For Your Eyes Only</div>
+        <div class="gm-title">The Secret the Compact Protects</div>
+        <div class="gm-body">
+          <p>You have collected all six fragments. You have read all six clauses. And now the final truth of the Rotting Hill Compact can be revealed to <span class="gm-player">${name}</span> — because this truth was always meant for you.</p>
+          <p>The Compact does not exist to keep Rotting Hill hidden from the world.</p>
+          <p>The Compact exists to keep it hidden until the right person arrives.</p>
+          <div class="crypt-reveal">The secret sealed in the Blackwood family crypt — third on the left — is this: Rotting Hill was founded in 1687 by six families. One of those families carried the name that <span class="gm-player">${name}</span> carries tonight. They built this borough. They signed this Compact. And the Compact has been waiting, across every Halloween since 1887, for someone from that line to come back and read it. The Dusk family has been keeping their place at the table set. Perpetua bakes shortbread every year. It has always been for you.<br><br>You are not a visitor to Rotting Hill. You are a founder coming home.</div>
+          <p>Turn over the Compact document. Find the line at the bottom. It has been there since 1887. It was printed there before any of this began.</p>
+          <p>It reads: <em>"<span class="gm-player">${name}</span> — Resident of Rotting Hill — Est. Halloween, ${new Date().getFullYear()}."</em></p>
+        </div>
+        <div class="gm-instruction">🪦 Proceed to the Blackwood Crypt — Third on the Left — Break the Seal</div>`;
+    }
+  } else {
+    docWrap.innerHTML=`
+    <div class="locked-section">
+      <div class="locked-icon">🔒</div>
+      <div class="locked-text">The Rotting Hill Compact remains sealed.<br>Collect all six fragments to reveal its contents.</div>
+      <div class="locked-progress">${fragCount} of 6 fragments collected · ${6-fragCount} remaining</div>
+    </div>`;
+  }
+}
+
+function printCertificate(){
+  const state=getState();
+  const name=state.name||'Visitor';
+  const year=new Date().getFullYear();
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><title>Grand Master Certificate</title>
+  <link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Cinzel:wght@400;600&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+  <style>body{background:#f2e8d5;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;font-family:'IM Fell English',serif;}
+  .cert{width:680px;max-width:95vw;border:6px double #2a1e08;padding:3rem;text-align:center;background:#f2e8d5;position:relative;}
+  .cert::before{content:'';position:absolute;inset:12px;border:1px solid #8a6a20;pointer-events:none;}
+  .cert-title{font-family:'UnifrakturMaguntia',cursive;font-size:3.5rem;color:#2a1e08;margin-bottom:0.5rem;}
+  .cert-sub{font-family:'Cinzel',serif;font-size:0.7rem;letter-spacing:0.4em;text-transform:uppercase;color:#5a4a2a;margin-bottom:2rem;}
+  .cert-body{font-size:1rem;line-height:2;color:#2a1e08;margin-bottom:1.5rem;}
+  .cert-name{font-family:'Cinzel',serif;font-size:2rem;font-weight:600;color:#6a1010;display:block;margin:0.5rem 0;}
+  .cert-sigs{display:flex;justify-content:center;gap:3rem;margin-top:2rem;border-top:1px solid #8a6a20;padding-top:1rem;}
+  .cert-sig{font-style:italic;font-size:0.8rem;color:#5a4a2a;text-align:center;}
+  .cert-sig strong{display:block;font-size:0.65rem;letter-spacing:0.2em;font-style:normal;margin-top:0.2rem;}</style></head>
+  <body><div class="cert">
+  <div class="cert-title">Rotting Hill</div>
+  <div class="cert-sub">Grand Master Certificate · All Hallows, ${year}</div>
+  <div class="cert-body">This certifies that<span class="cert-name">${name}</span>has collected all six fragments of the Rotting Hill Compact,<br>unlocked the borough mystery, broken the seal of the Blackwood crypt,<br>and been acknowledged as a Founder of Rotting Hill<br>by the unanimous consent of all six signatory residents.</div>
+  <div class="cert-body" style="font-size:0.85rem;font-style:italic;color:#5a4a2a;">"${name} — Resident of Rotting Hill — Est. Halloween, ${year}."</div>
+  <div class="cert-sigs">
+    <div class="cert-sig">Count Aldric Dreadmoor<strong>Dreadmoor Castle</strong></div>
+    <div class="cert-sig">Cornelius Dusk<strong>Dusk & Sons</strong></div>
+    <div class="cert-sig">Dr. Seymour Graves<strong>The Sanatorium</strong></div>
+  </div></div>
+  <script>window.print();<\/script></body></html>`);
+}
+
+function resetGame(){
+  if(confirm('Reset all game progress for Rotting Hill? This cannot be undone.')){
+    localStorage.removeItem('rh_state');
+    window.location.href='index.html?new=1';
+  }
+}
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Midnight Gazette — Rotting Hill</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=IM+Fell+English:ital@0;1&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --paper:#f2e8d5;--paper-dark:#e0d0b0;--ink-dark:#1a1208;
+  --ink:#2a1e0a;--ink-mid:#5a4a2a;--ink-light:#8a7a5a;
+  --blood:#6a1010;--gold:#8a6010;
+}
+body{background:#3a2a18;color:var(--ink);font-family:'IM Fell English',serif;min-height:100vh;padding:2rem 1rem;}
+
+/* Paper texture */
+.newspaper-wrap{max-width:680px;margin:0 auto;}
+.newspaper{background:var(--paper);position:relative;box-shadow:0 0 0 1px rgba(0,0,0,0.3),4px 4px 20px rgba(0,0,0,0.5),8px 8px 40px rgba(0,0,0,0.3);}
+.newspaper::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");pointer-events:none;z-index:1;}
+
+/* Masthead */
+.masthead{border-bottom:3px double var(--ink-dark);padding:1.5rem 2rem 1rem;text-align:center;position:relative;z-index:2;}
+.mast-top{display:flex;justify-content:space-between;font-size:0.7rem;color:var(--ink-mid);font-style:italic;margin-bottom:0.5rem;border-bottom:1px solid var(--ink-light);padding-bottom:0.4rem;}
+.mast-title{font-family:'UnifrakturMaguntia',cursive;font-size:clamp(2.5rem,8vw,4.5rem);color:var(--ink-dark);line-height:1;margin-bottom:0.15rem;}
+.mast-tagline{font-size:0.7rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--ink-mid);border-top:1px solid var(--ink-light);padding-top:0.4rem;margin-top:0.3rem;}
+
+/* Body */
+.paper-body{padding:1.5rem 2rem;position:relative;z-index:2;}
+
+/* Section rule */
+.section-rule{display:flex;align-items:center;gap:0.5rem;margin:1.25rem 0;}
+.section-rule::before,.section-rule::after{content:'';flex:1;height:1px;background:var(--ink-dark);}
+.section-rule-text{font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--ink-dark);white-space:nowrap;}
+
+/* Article */
+.article{margin-bottom:1.5rem;}
+.article-kicker{font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--blood);margin-bottom:0.25rem;}
+.article-headline{font-family:'Playfair Display',serif;font-size:clamp(1.2rem,4vw,1.8rem);font-weight:900;line-height:1.15;color:var(--ink-dark);margin-bottom:0.6rem;}
+.article-byline{font-size:0.72rem;font-style:italic;color:var(--ink-mid);margin-bottom:0.75rem;border-bottom:1px solid var(--paper-dark);padding-bottom:0.5rem;}
+.article-body{font-size:0.88rem;line-height:1.85;color:var(--ink);column-count:2;column-gap:1.5rem;text-align:justify;}
+.article-body p{margin-bottom:0.65rem;}
+.article-body p:first-child::first-letter{font-family:'Playfair Display',serif;font-size:3rem;font-weight:900;float:left;line-height:0.8;margin:0.1rem 0.1rem 0 0;color:var(--ink-dark);}
+.player-name{font-family:'Playfair Display',serif;font-style:italic;font-weight:700;color:var(--blood);}
+
+/* Two column layout */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem;}
+@media(max-width:480px){.two-col{grid-template-columns:1fr;}.article-body{column-count:1;}}
+
+/* Small article */
+.small-article{border-left:3px solid var(--ink-dark);padding-left:0.75rem;}
+.small-headline{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--ink-dark);margin-bottom:0.4rem;line-height:1.2;}
+.small-body{font-size:0.82rem;line-height:1.75;color:var(--ink);}
+.small-body p{margin-bottom:0.5rem;}
+
+/* Classifieds */
+.classifieds{border:1px solid var(--ink-dark);padding:0.85rem;margin-bottom:1.25rem;}
+.classifieds-title{font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.3em;text-transform:uppercase;text-align:center;color:var(--ink-dark);border-bottom:1px solid var(--ink-dark);padding-bottom:0.35rem;margin-bottom:0.6rem;}
+.classified-item{font-size:0.75rem;line-height:1.6;color:var(--ink-mid);margin-bottom:0.4rem;padding-bottom:0.4rem;border-bottom:1px dotted var(--paper-dark);}
+.classified-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.classified-item strong{color:var(--ink-dark);font-style:normal;}
+
+/* Weather box */
+.weather-box{border:1px solid var(--ink-dark);padding:0.75rem;font-size:0.78rem;line-height:1.65;}
+.weather-title{font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--ink-dark);margin-bottom:0.4rem;}
+
+/* Footer */
+.paper-footer{border-top:3px double var(--ink-dark);padding:0.75rem 2rem;display:flex;justify-content:space-between;align-items:center;font-size:0.65rem;color:var(--ink-mid);font-style:italic;position:relative;z-index:2;}
+
+/* Back button */
+.back-wrap{text-align:center;margin-top:1.5rem;}
+.back-btn{font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.25em;text-transform:uppercase;color:#c8b89a;text-decoration:none;border:1px solid rgba(200,184,154,0.3);padding:0.6rem 1.25rem;border-radius:2px;transition:all 0.2s;display:inline-block;}
+.back-btn:hover{border-color:rgba(200,184,154,0.6);color:#e8d8ba;}
+.print-btn{font-family:'Cinzel',serif;font-size:0.65rem;letter-spacing:0.25em;text-transform:uppercase;color:#c8b89a;background:transparent;border:1px solid rgba(200,184,154,0.3);padding:0.6rem 1.25rem;border-radius:2px;cursor:pointer;margin-left:0.75rem;transition:all 0.2s;}
+.print-btn:hover{border-color:rgba(200,184,154,0.6);}
+@media print{body{background:white;padding:0;}.back-wrap{display:none;}.newspaper{box-shadow:none;}}
+</style>
+</head>
+<body>
+<div class="newspaper-wrap">
+<div class="newspaper">
+
+  <!-- MASTHEAD -->
+  <div class="masthead">
+    <div class="mast-top">
+      <span>Vol. CXXXVI · No. 31</span>
+      <span>All Hallows Edition, 1887</span>
+      <span>Price: One Soul (Negotiable)</span>
+    </div>
+    <div class="mast-title">The Midnight Gazette</div>
+    <div class="mast-tagline">Official Journal of Rotting Hill Borough · "All the News That Is Fit To Suppress"</div>
+  </div>
+
+  <!-- PAPER BODY -->
+  <div class="paper-body" id="paper-body">
+    <!-- Populated by JS -->
+  </div>
+
+  <!-- FOOTER -->
+  <div class="paper-footer">
+    <span>The Midnight Gazette accepts no responsibility for alterations to memory or hair colour.</span>
+    <span>Established 1687 · Published When Deemed Necessary</span>
+  </div>
+</div>
+
+<div class="back-wrap">
+  <a href="village-map.html" class="back-btn" id="back-btn">← Return to Rotting Hill</a>
+  <button class="print-btn" onclick="window.print()">Print This Edition</button>
+</div>
+</div>
+
+<script>
+const params=new URLSearchParams(window.location.search);
+const bid=params.get('building')||'dreadmoor';
+function getState(){try{return JSON.parse(localStorage.getItem('rh_state')||'{}')}catch{return{}}}
+const state=getState();
+
+// Smart back button: go to village-map if registered, index if not
+const backBtn=document.getElementById('back-btn');
+if(backBtn){
+  backBtn.href = state.name ? 'village-map.html' : 'index.html';
+}
+
+const name=state.name||'the Visitor';
+const N=`<span class="player-name">${name}</span>`;
+
+const EDITIONS={
+  dreadmoor:{
+    kicker:'Exclusive: Vampire Affairs',
+    headline:`${name}'s Ancestral Connection to Castle Dreadmoor Cannot Be Ignored, Says Count`,
+    byline:`By our Cursed Hill Correspondent · Printed under extreme duress`,
+    body:`<p>Castle Dreadmoor welcomed a visitor of particular note this All Hallows Eve, as Count Aldric Dreadmoor himself confirmed what genealogical records have suggested for decades: that ${N} bears an ancestral connection to the original signatories of the Rotting Hill Compact that has been, in the Count's words, "long overdue for acknowledgment."</p>
+    <p>"The ${name} family line," said the Count, adjusting his cufflinks with an economy of motion that suggested nine centuries of practice, "first encountered this borough in 1423. They were memorable visitors. They always are."</p>
+    <p>The Count declined to elaborate on the nature of this first encounter, citing what he termed "the confidentiality of the Compact" and "an agreement with the Dusk family regarding historical discretion." He did confirm, however, that ${N}'s name appears in the castle's visitor ledger on no fewer than four occasions across several centuries, which he described as "statistically improbable and personally gratifying."</p>
+    <p>When asked whether ${N} was in any danger, the Count smiled for the first time. "Danger," he said pleasantly, "is such a limiting word." The interview concluded at this point, as the Count's castle door closed with a finality that discouraged follow-up questions.</p>`,
+    sidebar:{
+      headline:'Bats Reported Moving with "Unusual Purpose"',
+      body:`<p>Several Rotting Hill residents have reported observing the bat colony associated with Castle Dreadmoor moving in formations described as "deliberate" and "frankly organised" on the evening of October 31st.</p><p>Count Dreadmoor's office declined to comment. The bats were unavailable.</p>`
+    },
+    classifieds:[
+      {bold:'LOST:',text:'One shadow. Last seen near the Dreadmoor gatehouse. Answers to nothing, as shadows do not answer. Reward offered. Do not approach it alone.'},
+      {bold:'FOR HIRE:',text:'Experienced bat wrangler. Nine centuries of references. Apply in writing to Castle Dreadmoor. Do not knock.'},
+      {bold:'NOTICE:',text:'The Count reminds residents that the castle drawbridge is not a shortcut to the high street. It has never been a shortcut. It will not become one.'},
+    ],
+    weather:'FORECAST: Eternal darkness, with a 90% chance of unsettling fog. Temperature: cold in the way that is personal. Wind: from a direction that does not appear on compasses. Visibility: dependent on what you are willing to see.'
+  },
+  shadowmere:{
+    kicker:'Domestic Affairs · The Cursed Hill',
+    headline:`Shadowmere Manor Confirms ${name} Was "Expected" — Family Insists 1933 Has Not Yet Occurred`,
+    byline:`By our Paranormal Domestic Correspondent`,
+    body:`<p>The Blackwood family of Shadowmere Manor issued a statement this week confirming that ${N} was not only expected at the Manor but had, in fact, been anticipated for "some time," a period they declined to specify on the grounds that they do not acknowledge the existence of linear time as it has been understood since their disappearance in 1933.</p>
+    <p>"${name}," said a spokesperson for the Blackwood family, speaking through a method our correspondent has agreed not to describe in print, "is known to this household. We were very pleased to receive the visit. We have set a place at dinner. We do this every year."</p>
+    <p>Records held by the Rotting Hill Historical Society — in the section accessible only to those with the Compact's signatories' permission — confirm that the ${name} family name appears in Shadowmere Manor's guest register beginning in 1887. The most recent entry, dated October 31st of this year, appears to have been made before the visit occurred.</p>
+    <p>When this discrepancy was raised with Cornelius Dusk, who maintains copies of all Rotting Hill documents, he paused for a long moment before saying "The Manor has always operated somewhat ahead of schedule." He then returned to his paperwork and declined to add anything further.</p>`,
+    sidebar:{
+      headline:'Attic Window Reported Ajar — Candles Remain Mysteriously Lit',
+      body:`<p>Neighbours of Shadowmere Manor report the attic window was observed open on the evening of October 31st for the first time since 1933, coinciding with ${name}'s visit.</p><p>The candles in the Manor, which have burned continuously since 1933 without apparent fuel source, were reported to burn "more brightly" during the visit, according to two witnesses who have since revised their statements to "we saw nothing unusual."</p>`
+    },
+    classifieds:[
+      {bold:'MISSING:',text:`One calendar. Last seen in Shadowmere Manor. If found, please note that the Blackwood family requests it not be returned if it shows any date after October 31st, 1932.`},
+      {bold:'FOR SALE:',text:'Attic desk. Victorian. One careful owner. Currently inaccessible. Inquire at the Manor. Knock on the attic window.'},
+      {bold:'PERSONAL:',text:`To ${name}: You left something behind on your last visit. We are keeping it safe. We are not certain when your last visit was. Neither, we suspect, are you. — The Blackwood Family`},
+    ],
+    weather:'FORECAST: Yesterday, with a high chance of 1932. Temporal anomalies possible near the Manor attic. Residents advised to avoid making plans for any specific year.'
+  },
+  sanatorium:{
+    kicker:'Medical & Wellness Affairs',
+    headline:`Rotting Hill Sanatorium Expands Admissions To Include Anyone Named ${name}, Says Dr. Graves`,
+    byline:`By our Medical Correspondent · Currently an Outpatient`,
+    body:`<p>The Rotting Hill Sanatorium for Lost Minds announced this week an expansion of its admissions criteria to include, by specific amendment to its charter, any individual bearing the name ${N}, following what Dr. Seymour Graves described as "a compelling body of ancestral evidence" and Charge Nurse Lockdown described as "long overdue."</p>
+    <p>"We have records," said Dr. Graves, adjusting his clipboard while maintaining eye contact that our correspondent found professionally uncomfortable, "going back to 1687, suggesting that the ${name} family has demonstrated a recurring and hereditary predisposition toward curiosity, door-opening, and the asking of questions that are frankly nobody's business. We consider it a wellness matter."</p>
+    <p>Charge Nurse Lockdown confirmed that a file for ${N} has already been prepared, a room assigned, and a cup of tea set aside. "We find it's best to be ready," she said warmly, reaching for her keys. "The ${name} family has been coming to us eventually for generations. It's almost a tradition."</p>
+    <p>Nurse Ratchet was present during the interview but did not speak. She did, at one point, hold up a key and look at our correspondent for a sustained period. Our correspondent has since requested a transfer to the garden column.</p>
+    <p>${N} could not be reached for comment, possibly because ${name} is already inside.</p>`,
+    sidebar:{
+      headline:'Dr. Graves Announces New Room Names',
+      body:`<p>Dr. Seymour Graves has renamed three rooms in the Sanatorium's east wing. The Reading Room is now The Room of Irreversible Decisions. The Quiet Room is now The Room Where Sounds Go To Stop. The Exit is now The Room That Remains Theoretical.</p><p>Nurse Ratchet approved all three changes in writing. Her approval note consisted of a single tick mark and what staff believe was a smile, though no one can confirm this.</p>`
+    },
+    classifieds:[
+      {bold:'POSITION AVAILABLE:',text:'Night orderly, Rotting Hill Sanatorium. No experience necessary. Previous experience unhelpful. Apply to Charge Nurse Lockdown. Do not apply to Nurse Ratchet directly.'},
+      {bold:'LOST:',text:'One patient's sense of certainty. Last seen in the waiting room. Dr. Graves says this is expected and has made a note.'},
+      {bold:'NOTICE:',text:`The Sanatorium reminds ${name} that the file opened in their name is a courtesy. Admission remains optional. For now. — Dr. S. Graves, Chief Medical Officer`},
+    ],
+    weather:'FORECAST: Calm, with a persistent feeling of being observed. Chance of unsolicited professional assessments: 100%. Recommended attire: something that makes a good impression on clipboards.'
+  },
+  sisterhood:{
+    kicker:'Coven & Community Affairs',
+    headline:`Sisterhood Confirms ${name} Family Bloodline Appears in Three Separate Spell Books`,
+    byline:`By our Dark Wood Edge Correspondent · Signing Off Before Gertie Offers More Soup`,
+    body:`<p>The Sisterhood of the Perpetual Cauldron issued a statement this All Hallows Eve confirming that the name ${N} appears in no fewer than three of the Sisterhood's historical spell books, in contexts that Agatha Bubblewick described as "significant," Prudence Poxley described as "concerning in a way I wish to document formally," and Gertie Grimladle described as "great news for the soup."</p>
+    <p>"The ${name} family," said Agatha, adding a pinch of something to a preparation our correspondent declined to identify, "has been connected to this coven since the founding of Rotting Hill. They were, in the early records, described as 'sympathetic neighbours.' Later entries are less complimentary. Later entries are very interesting."</p>
+    <p>Prudence Poxley produced a blessing tailored specifically to ${N}, which she delivered in the passive-aggressive manner for which she is professionally known. "It's a wonderful blessing," she confirmed. "Technically. The specifics are between ${name} and whatever is listening."</p>
+    <p>Gertie Grimladle meanwhile offered this correspondent a small sample of what she described as a "commemorative batch" of the Soup of Eternal Regret, prepared in honour of ${name}'s visit. Our correspondent declined. Gertie made a note that our correspondent would reconsider this eventually. She seemed very certain about the timeline.</p>`,
+    sidebar:{
+      headline:'Cauldron Operating Continuously Since 1687, Records Confirm',
+      body:`<p>The Sisterhood's central cauldron has been in continuous operation since the founding of Rotting Hill in 1687 — a record that Agatha Bubblewick called "a matter of professional pride" and Gertie Grimladle called "the soup is never not ready."</p><p>Prudence Poxley noted that the cauldron has been the subject of a formal complaint from three separate borough councils, all of which have since lost their paperwork.</p>`
+    },
+    classifieds:[
+      {bold:'AVAILABLE:',text:'One personalised blessing. May cause mild unease. Signed, P. Poxley. Free with any boil consultation.'},
+      {bold:'CAUTION:',text:'Gertie Grimladle\'s garden shed is temporarily off limits following an incident involving a spell book described as "the medium one." The medium one bites.'},
+      {bold:'NOTICE TO',text:`${name}: Your ingredient appears in the recipe for something we are not permitted to name in print. Consider this a courtesy heads-up. — A. Bubblewick, Head of Potions`},
+    ],
+    weather:'FORECAST: Variable smoke, smelling of something different each hour. 80% chance of passive-aggressive blessings. Tonight\'s featured scent: something that used to be you.'
+  },
+  enstein:{
+    kicker:'Science & Experimental Affairs',
+    headline:`Dr. Enstein Confirms ${name} Family Provided "Critical Inspiration" For His Greatest Experiment`,
+    byline:`By our Lightning Quarter Correspondent · Gerald Agreed To Be Interviewed; Dr. Enstein Did Not Know This`,
+    body:`<p>Dr. Frank Enstein of the Lightning Quarter announced this All Hallows Eve that the ${N} family line provided what he described as "the central inspiration for my most significant ongoing experiment," a claim greeted with great enthusiasm by Dr. Enstein, cautious acknowledgment by Gerald, and a request for clarification from this correspondent that Dr. Enstein addressed for forty-five minutes without fully answering.</p>
+    <p>"The ${name} family," said Dr. Enstein, gesturing at a chalkboard covered in equations that this correspondent could confirm were either a scientific breakthrough or a shopping list, "appeared in my research in 1887 as a recurring variable. A presence. An anomaly. I have seventeen chalkboards dedicated to the ${name} question. Gerald has asked me to clarify that fourteen of those chalkboards are grocery lists. Gerald is wrong about six of them."</p>
+    <p>Gerald, interviewed separately and without Dr. Enstein's knowledge, confirmed that he has been aware of the ${name} family's connection to Rotting Hill "since longer than the Doctor thinks" and that he considers ${N}'s visit "an expected development." He then adjusted his hat and declined to say anything else, which our correspondent found more informative than the previous forty-five minutes.</p>`,
+    sidebar:{
+      headline:'Lightning Rod Strike Count Reaches New Record',
+      body:`<p>The lightning rod atop Dr. Enstein's castle was struck for the 1,247th time this October, a new annual record. Dr. Enstein called each strike "a successful experiment." Gerald, asked for comment, looked at the ceiling for a long time before saying "Tuesday."</p><p>The ${name} family, records suggest, was present for strike number 1,183. Dr. Enstein's notes describe this as "not a coincidence."</p>`
+    },
+    classifieds:[
+      {bold:'LOST:',text:'One creation. Name: Gerald. Wearing a hat, under protest. If found, please return via the laboratory tower hatch. Do not use the front door. Gerald knows why.'},
+      {bold:'FOR SALE:',text:'Scientific equations, seventeen chalkboards. Buyer to determine which contain breakthroughs. Starting price: one bolt of lightning. Apply: Dr. F. Enstein, Lightning Quarter.'},
+      {bold:'NOTICE:',text:`${name}: Your role in Experiment 1,247 was, as suspected, non-accidental. Full results to be published when Gerald stops disagreeing with the methodology. — Dr. F. Enstein`},
+    ],
+    weather:'FORECAST: High electrostatic activity, particularly near the castle tower. 100% chance of lightning strikes between 9pm and midnight. Dr. Enstein calls this ideal. Gerald calls this Tuesday.'
+  },
+  dusk:{
+    kicker:'Funerary & Final Affairs',
+    headline:`Dusk & Sons Confirms ${name} Name Has Appeared in Cemetery Records Since 1687`,
+    byline:`By our Sacred & Quietly Final Quarter Correspondent`,
+    body:`<p>Cornelius Dusk, seventh-generation proprietor of Dusk & Sons Funeral Emporium at Rotting Hill Cemetery, confirmed this All Hallows Eve that the name ${N} appears in the cemetery's records in an entry dated 1687 — the founding year of Rotting Hill itself — in a section of the ledger reserved for what Mr. Dusk described as "anticipated future arrangements."</p>
+    <p>"The ${name} family," said Mr. Dusk, in the measured tone of a man who has delivered difficult news gracefully for 160 years, "has always been connected to this borough. We have maintained their file with the same care we extend to all our clients. Present and future." He paused. "The file is quite thick."</p>
+    <p>Perpetua Dusk, speaking from the cemetery grounds where she was placing flowers on the Mossgrove plot, confirmed that she has been expecting ${N}'s visit "since the beginning of the season, and before that if I'm honest." She offered shortbread. She always offers shortbread. Nobody has ever asked how she knows to have it ready.</p>
+    <p>The Blackwood family crypt — third on the left — was not opened during ${name}'s visit, Mr. Dusk confirmed. He noted this with what appeared to be relief. "Not yet," he said quietly, returning to his paperwork. "Not quite yet."</p>`,
+    sidebar:{
+      headline:'Permanent Guests Reported "More Active Than Usual" On Halloween Eve',
+      body:`<p>Perpetua Dusk reports that the permanent guests of Rotting Hill Cemetery were "considerably more animated than usual" on the evening of October 31st, which she attributed to ${name}'s visit and "a general sense that something long expected is finally happening."</p><p>The Mossgrove family plot had fresh flowers. The Unknown Occupant's plot was undisturbed. The Blackwood crypt remained sealed. Its wax seal was described by two witnesses as "warmer than it should be."</p>`
+    },
+    classifieds:[
+      {bold:'SERVICES:',text:'Dusk & Sons Funeral Emporium — Final Arrangements Since 1843. Walk-ins welcome. Eventually, everyone does. No appointment necessary for the inevitable.'},
+      {bold:'NOTICE:',text:'The Blackwood family crypt (third on the left) remains sealed by order of the Rotting Hill Compact. The seal will be broken when the appointed visitor arrives. Mr. Dusk believes this will be soon.'},
+      {bold:'PERSONAL:',text:`To ${name}: Your name is in our book. It has always been in our book. We are very glad you came. Please do sign the guest register. It is not optional. — C. & P. Dusk`},
+    ],
+    weather:'FORECAST: Quiet, with a persistent sense of finality. Fog at the cemetery gates until further notice. Perpetua Dusk says the fog is "atmospheric." Cornelius Dusk says it is "inevitable." Both are correct.'
+  },
+};
+
+function render(){
+  const ed=EDITIONS[bid]||EDITIONS.dreadmoor;
+  const body=document.getElementById('paper-body');
+  body.innerHTML=`
+    <div class="article">
+      <div class="article-kicker">${ed.kicker}</div>
+      <div class="article-headline">${ed.headline}</div>
+      <div class="article-byline">By our Correspondent · All Hallows Edition, 1887 · Rotting Hill, Est. 1687</div>
+      <div class="article-body">${ed.body}</div>
+    </div>
+    <div class="section-rule"><span class="section-rule-text">Further Reports from Rotting Hill</span></div>
+    <div class="two-col">
+      <div class="small-article">
+        <div class="small-headline">${ed.sidebar.headline}</div>
+        <div class="small-body">${ed.sidebar.body}</div>
+      </div>
+      <div>
+        <div class="classifieds">
+          <div class="classifieds-title">Notices & Classifieds</div>
+          ${ed.classifieds.map(c=>`<div class="classified-item"><strong>${c.bold}</strong> ${c.text}</div>`).join('')}
+        </div>
+        <div class="weather-box">
+          <div class="weather-title">Tonight's Weather Forecast</div>
+          ${ed.weather}
+        </div>
+      </div>
+    </div>
+  `;
+}
+render();
+</script>
+</body>
+</html>
